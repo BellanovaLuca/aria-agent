@@ -20,7 +20,7 @@ export function ScrollToTop({ containerRef }: { containerRef: React.RefObject<HT
       style={{
         position: 'fixed',
         bottom: 28,
-        right: 28,
+        left: 'calc(var(--sidebar-w, 280px) + 16px)',
         width: 40,
         height: 40,
         borderRadius: '50%',
@@ -36,7 +36,7 @@ export function ScrollToTop({ containerRef }: { containerRef: React.RefObject<HT
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.85)',
         pointerEvents: visible ? 'auto' : 'none',
-        transition: 'opacity 0.22s ease, transform 0.22s ease',
+        transition: 'opacity 0.22s ease, transform 0.22s ease, left 0.2s ease-in-out',
       }}
     >
       <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">

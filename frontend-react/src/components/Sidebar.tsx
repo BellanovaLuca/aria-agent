@@ -118,6 +118,11 @@ export function Sidebar({ current, onNavigate, isDark, onThemeToggle, userCount,
   }, [sidebarWidth])
 
   useEffect(() => {
+    const w = isCollapsed ? 62 : sidebarWidth
+    document.documentElement.style.setProperty('--sidebar-w', `${w}px`)
+  }, [isCollapsed, sidebarWidth])
+
+  useEffect(() => {
     if (RESET_PAGES.includes(current)) setResetOpen(true)
   }, [current])
 
