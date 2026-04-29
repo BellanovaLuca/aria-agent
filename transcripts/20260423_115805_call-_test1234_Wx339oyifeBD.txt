@@ -1,9 +1,0 @@
-=== Chiamata: call-_test1234_Wx339oyifeBD — 2026-04-23T11:58:05.227208 ===
-
-AGENTE: Buongiorno! Sono Sofia del supporto IT. Sono qui per aiutarti con il reset della password. Come posso esserti utile?
-UTENTE: vorrei resettare la password per Luca.neri.
-AGENTE: Ho verificato l'account, Luca, ma risulta bloccato. In questo caso non posso eseguire il reset della password, dovrai contattare il supporto tecnico. C'è qualcos'altro che posso fare per te?
-UTENTE: No, grazie, ciao.
-AGENTE: È stato un piacere aiutarti, Luca. Ti auguro una buona giornata!
-
-=== Fine chiamata: 2026-04-23T11:58:49.053694 ===

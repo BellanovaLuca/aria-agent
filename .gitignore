@@ -15,6 +15,10 @@ venv/
 frontend-react/node_modules/
 frontend-react/dist/
 
+# Runtime data
+transcripts/
+user_service/db.json
+
 # Credentials & secrets
 *_recovery_code.txt
 *.pem

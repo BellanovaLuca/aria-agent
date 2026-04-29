@@ -1,9 +1,0 @@
-=== Chiamata: call-_test1234_gjHVSxuTEWoM — 2026-04-23T09:47:12.472290 ===
-
-AGENTE: Buongiorno, sono Sofia del supporto IT. Come posso aiutarla oggi?
-UTENTE: Vorrei resettare la mia password.
-AGENTE: Certo, nessun problema. Per procedere, potrebbe gentilmente fornirmi il suo username o l'indirizzo email aziendale?
-UTENTE: Mario.rossi.
-AGENTE: Grazie. Ho verificato l'account di Mario Rossi ed è attivo. Posso procedere con il reset della sua password?
-
-=== Fine chiamata: 2026-04-23T09:48:06.140638 ===
