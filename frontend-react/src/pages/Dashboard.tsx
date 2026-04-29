@@ -98,37 +98,113 @@ function DonutChart({ phone, email, total }: { phone: number; email: number; tot
   )
 }
 
-function BarChartSVG({ data }: { data: Array<{ label: string; ok: number; fail: number }> }) {
+function BarChartSVG({
+  data,
+  onFilterClick,
+  activeChannel,
+}: {
+  data: Array<{ label: string; ok: number; fail: number }>
+  onFilterClick?: (channel: 'voice' | 'email') => void
+  activeChannel?: 'voice' | 'email' | null
+}) {
   const [hovered, setHovered] = useState<string | null>(null)
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
   const max = Math.max(...data.map(d => Math.max(d.ok, d.fail)), 1)
   const h = 120, barW = 38, gap = 16, groupGap = 60
-  const groups = data.length
-  const totalW = groups * (2 * barW + gap + groupGap)
+  const totalW = data.length * (2 * barW + gap + groupGap)
+
+  const channelOf = (label: string): 'voice' | 'email' => label === 'Telefono' ? 'voice' : 'email'
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top })
+  }
+
+  const hoveredData = hovered ? data.find(d => d.label === hovered) ?? null : null
+
   return (
-    <div style={{ width: '100%' }} role="img" aria-label="Esito per canale: successi e fallimenti telefono ed email">
-      <svg width="100%" height={h + 56} viewBox={`0 0 ${totalW + 40} ${h + 56}`} preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <div ref={containerRef} style={{ width: '100%', position: 'relative' }}
+      role="img" aria-label="Esito per canale: successi e fallimenti telefono ed email">
+      <svg width="100%" height={h + 56} viewBox={`0 0 ${totalW + 40} ${h + 56}`}
+        preserveAspectRatio="xMidYMid meet" aria-hidden="true"
+        onMouseMove={handleMouseMove}>
         {data.map((d, i) => {
           const x = 20 + i * (2 * barW + gap + groupGap)
           const okH = max > 0 ? d.ok / max * h : 0
           const failH = max > 0 ? d.fail / max * h : 0
           const isHov = hovered === d.label
+          const channel = channelOf(d.label)
+          const isActive = activeChannel === channel
           return (
             <g key={d.label}
               onMouseEnter={() => setHovered(d.label)}
-              onMouseLeave={() => setHovered(null)}
+              onMouseLeave={() => { setHovered(null); setMousePos(null) }}
+              onClick={() => onFilterClick?.(channel)}
+              style={{ cursor: onFilterClick ? 'pointer' : 'default' }}
             >
-              {/* invisible hover target covering the whole group */}
               <rect x={x - 6} y={0} width={2 * barW + gap + 12} height={h + 4} fill="transparent" />
-              <rect x={x} y={h - okH} width={barW} height={Math.max(okH, 0)} rx={4} fill="#6ee7b7" opacity={isHov ? 1 : 0.75} style={{ transition: 'opacity .15s' }} />
-              <rect x={x + barW + gap} y={h - failH} width={barW} height={Math.max(failH, 0)} rx={4} fill="#fca5a5" opacity={isHov ? 1 : 0.75} style={{ transition: 'opacity .15s' }} />
-              {isHov && <text x={x + barW / 2} y={h + 16} textAnchor="middle" fill="#6ee7b7" fontSize="12" fontWeight="700" fontFamily="DM Sans">{d.ok}</text>}
-              {isHov && <text x={x + barW + gap + barW / 2} y={h + 16} textAnchor="middle" fill="#fca5a5" fontSize="12" fontWeight="700" fontFamily="DM Sans">{d.fail}</text>}
-              <text x={x + barW + gap / 2} y={h + 32} textAnchor="middle" fill="var(--text2)" fontSize="12" fontFamily="DM Sans">{d.label}</text>
+              <rect x={x} y={h - okH} width={barW} height={Math.max(okH, 0)} rx={4}
+                fill="#6ee7b7" opacity={isHov || isActive ? 1 : 0.75} style={{ transition: 'opacity .15s' }} />
+              <rect x={x + barW + gap} y={h - failH} width={barW} height={Math.max(failH, 0)} rx={4}
+                fill="#fca5a5" opacity={isHov || isActive ? 1 : 0.75} style={{ transition: 'opacity .15s' }} />
+              <text x={x + barW + gap / 2} y={h + 32} textAnchor="middle"
+                fill={isActive ? 'var(--accent)' : 'var(--text2)'}
+                fontSize="12" fontWeight={isActive ? '700' : '400'} fontFamily="DM Sans">
+                {d.label}
+              </text>
             </g>
           )
         })}
         <line x1={20} y1={h} x2={totalW + 20} y2={h} stroke="var(--border)" strokeWidth="1" />
       </svg>
+
+      {/* Floating tooltip */}
+      {hoveredData && mousePos && (() => {
+        const tot = hoveredData.ok + hoveredData.fail
+        const okPct  = tot > 0 ? Math.round(hoveredData.ok   / tot * 100) : 0
+        const failPct = tot > 0 ? Math.round(hoveredData.fail / tot * 100) : 0
+        const flipX = mousePos.x > 160
+        return (
+          <div style={{
+            position: 'absolute',
+            left: flipX ? mousePos.x - 154 : mousePos.x + 12,
+            top: Math.max(0, mousePos.y - 20),
+            background: 'var(--surface2)',
+            border: '1px solid var(--border2)',
+            borderRadius: 8,
+            padding: '10px 12px',
+            pointerEvents: 'none',
+            zIndex: 10,
+            width: 142,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
+              {hoveredData.label}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+              <span style={{ fontSize: 11, color: '#6ee7b7' }}>Successi</span>
+              <span style={{ fontSize: 11, color: 'var(--text)', fontWeight: 600 }}>
+                {hoveredData.ok} <span style={{ color: 'var(--text3)', fontWeight: 400 }}>{okPct}%</span>
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 11, color: '#fca5a5' }}>Falliti</span>
+              <span style={{ fontSize: 11, color: 'var(--text)', fontWeight: 600 }}>
+                {hoveredData.fail} <span style={{ color: 'var(--text3)', fontWeight: 400 }}>{failPct}%</span>
+              </span>
+            </div>
+            {onFilterClick && (
+              <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)' }}>
+                Clic per filtrare
+              </div>
+            )}
+          </div>
+        )
+      })()}
+
       <div style={{ display: 'flex', gap: 16, marginTop: 4 }}>
         {[{ c: '#6ee7b7', l: 'Successo' }, { c: '#fca5a5', l: 'Fallito' }].map(x => (
           <div key={x.l} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text2)' }}>
@@ -342,7 +418,11 @@ export function Dashboard({ addToast }: Props) {
               Esito per canale
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <BarChartSVG data={barData} />
+              <BarChartSVG
+                data={barData}
+                onFilterClick={(ch) => setActiveFilter(f => f === ch ? null : ch)}
+                activeChannel={activeFilter === 'voice' ? 'voice' : activeFilter === 'email' ? 'email' : null}
+              />
             </div>
           </div>
         </div>
