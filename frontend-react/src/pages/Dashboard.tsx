@@ -17,19 +17,68 @@ function DonutChart({ phone, email, total }: { phone: number; email: number; tot
   const emailDash = Math.max(0, circ * emailRatio - gap)
   const phoneOffset = -circ * 0.25
   const emailOffset = -(circ * 0.25) - phoneDash - gap
+
+  const svgRef = useRef<SVGSVGElement>(null)
+  const dragState = useRef<{ startAngle: number; baseRotation: number } | null>(null)
+  const rotRef = useRef(0)
+  const [rotation, setRotation] = useState(0)
+  const [dragging, setDragging] = useState(false)
+
+  const getAngle = (e: { clientX: number; clientY: number }) => {
+    const svg = svgRef.current
+    if (!svg) return 0
+    const rect = svg.getBoundingClientRect()
+    const x = (e.clientX - rect.left) * (192 / rect.width) - cx
+    const y = (e.clientY - rect.top) * (192 / rect.height) - cy
+    return Math.atan2(y, x) * 180 / Math.PI
+  }
+
+  const onMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
+    e.preventDefault()
+    dragState.current = { startAngle: getAngle(e), baseRotation: rotRef.current }
+    setDragging(true)
+
+    const onMove = (ev: MouseEvent) => {
+      if (!dragState.current) return
+      const rot = dragState.current.baseRotation + (getAngle(ev) - dragState.current.startAngle)
+      rotRef.current = rot
+      setRotation(rot)
+    }
+    const onUp = () => {
+      dragState.current = null
+      rotRef.current = 0
+      setRotation(0)
+      setDragging(false)
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
   return (
     <div role="img" aria-label={`Distribuzione canali: ${phone} telefono, ${email} email, ${total} totali`}
       style={{ display: 'flex', alignItems: 'center', gap: 40, width: '100%', justifyContent: 'center' }}>
-      <svg width="192" height="192" viewBox="0 0 192 192" style={{ flexShrink: 0 }} aria-hidden="true">
+      <svg ref={svgRef} width="192" height="192" viewBox="0 0 192 192"
+        style={{ flexShrink: 0, cursor: dragging ? 'grabbing' : 'grab', userSelect: 'none' }}
+        onMouseDown={onMouseDown}
+        aria-hidden="true">
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--surface3)" strokeWidth={stroke} />
-        {phoneDash > 0 && (
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--accent)" strokeWidth={stroke}
-            strokeDasharray={`${phoneDash} ${circ}`} strokeDashoffset={phoneOffset} strokeLinecap="round" />
-        )}
-        {emailDash > 0 && (
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--accent)" strokeWidth={stroke}
-            strokeDasharray={`${emailDash} ${circ}`} strokeDashoffset={emailOffset} strokeLinecap="round" strokeOpacity={0.4} />
-        )}
+        <g style={{
+          transform: `rotate(${rotation}deg)`,
+          transformOrigin: `${cx}px ${cy}px`,
+          transformBox: 'view-box' as const,
+          transition: dragging ? 'none' : 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        }}>
+          {phoneDash > 0 && (
+            <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--accent)" strokeWidth={stroke}
+              strokeDasharray={`${phoneDash} ${circ}`} strokeDashoffset={phoneOffset} strokeLinecap="round" />
+          )}
+          {emailDash > 0 && (
+            <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--accent)" strokeWidth={stroke}
+              strokeDasharray={`${emailDash} ${circ}`} strokeDashoffset={emailOffset} strokeLinecap="round" strokeOpacity={0.4} />
+          )}
+        </g>
         <text x={cx} y={cy - 6} textAnchor="middle" fill="var(--text)" fontSize="26" fontWeight="700" fontFamily="DM Sans">{total}</text>
         <text x={cx} y={cy + 14} textAnchor="middle" fill="var(--text2)" fontSize="12" fontFamily="DM Sans">totale</text>
       </svg>
