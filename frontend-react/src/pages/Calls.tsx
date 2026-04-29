@@ -4,6 +4,21 @@ import { toYMD } from '../utils'
 import { DatePicker } from '../components/DatePicker'
 import type { TranscriptMeta, ToastItem } from '../types'
 
+function highlight(text: string, query: string): React.ReactNode {
+  if (!query.trim()) return text
+  const q = query.toLowerCase()
+  const parts: React.ReactNode[] = []
+  let lower = text.toLowerCase(), last = 0, idx = lower.indexOf(q)
+  while (idx !== -1) {
+    if (idx > last) parts.push(text.slice(last, idx))
+    parts.push(<mark key={idx} style={{ background: 'var(--accent)', color: '#000', borderRadius: 2, padding: '0 1px' }}>{text.slice(idx, idx + query.length)}</mark>)
+    last = idx + query.length
+    idx = lower.indexOf(q, last)
+  }
+  if (last < text.length) parts.push(text.slice(last))
+  return <>{parts}</>
+}
+
 function parseLabel(label: string): { date: string; caller: string } {
   const parts = label.split('—').map(p => p.trim())
   return { date: parts[1] ?? '', caller: parts[2] ?? '' }
@@ -120,8 +135,38 @@ export function Calls({ addToast }: Props) {
     [transcripts, dateFilter]
   )
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [bgFetching, setBgFetching] = useState(0)
+  const searchFetchedRef = useRef<Set<string>>(new Set())
+
+  // When search is active, auto-fetch all uncached transcripts in background
+  useEffect(() => {
+    if (!searchQuery.trim()) return
+    const toFetch = transcripts.filter(t =>
+      !cache[t.filename] && !searchFetchedRef.current.has(t.filename)
+    )
+    if (!toFetch.length) return
+    toFetch.forEach(t => searchFetchedRef.current.add(t.filename))
+    setBgFetching(n => n + toFetch.length)
+    toFetch.forEach(async (t) => {
+      try {
+        const res = await fetch(`/transcripts/${encodeURIComponent(t.filename)}`)
+        const text = res.ok ? await res.text() : ''
+        setCache(p => ({ ...p, [t.filename]: text }))
+      } catch { /* silent */ }
+      finally { setBgFetching(n => Math.max(0, n - 1)) }
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, transcripts])
+
+  const searched = useMemo(() => {
+    if (!searchQuery.trim()) return filtered
+    const q = searchQuery.toLowerCase()
+    return filtered.filter(t => cache[t.filename]?.toLowerCase().includes(q) ?? false)
+  }, [filtered, searchQuery, cache])
+
+  const totalPages = Math.max(1, Math.ceil(searched.length / PAGE_SIZE))
+  const paged = searched.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   return (
     <div className="fade-in" style={{ padding: '28px 32px', height: '100%', overflowY: 'auto' }}>
@@ -133,7 +178,36 @@ export function Calls({ addToast }: Props) {
           <p style={{ fontSize: 13, color: 'var(--text3)' }}>Registrazioni e log delle sessioni vocali</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 200 }}>
+          {/* Search box */}
+          <div style={{ position: 'relative', width: 210 }}>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"
+              style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)', pointerEvents: 'none' }}>
+              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => { setSearchQuery(e.target.value); setPage(0) }}
+              placeholder="Cerca nelle trascrizioni…"
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                padding: '6px 26px 6px 28px',
+                borderRadius: 7, border: '1px solid var(--border)',
+                background: 'var(--surface2)', color: 'var(--text)',
+                fontSize: 12, outline: 'none', fontFamily: 'var(--font)',
+                transition: 'border-color .15s',
+              }}
+              onFocus={e => { e.currentTarget.style.borderColor = 'var(--border2)' }}
+              onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+            />
+            {searchQuery && (
+              <button onClick={() => { setSearchQuery(''); setPage(0) }}
+                style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text3)', fontSize: 15, lineHeight: 1, padding: '0 2px' }}>
+                ×
+              </button>
+            )}
+          </div>
+          <div style={{ width: 180 }}>
             <DatePicker value={dateFilter} onChange={(v) => { setDateFilter(v); setPage(0) }} placeholder="Filtra per data…" />
           </div>
           <button onClick={handleRefresh} disabled={refreshing} aria-label="Aggiorna"
@@ -150,8 +224,16 @@ export function Calls({ addToast }: Props) {
 
       {/* List */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)' }}>
-          Trascrizioni ({filtered.length}{dateFilter ? ` / ${transcripts.length}` : ''})
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>
+            Trascrizioni ({searchQuery.trim() ? `${searched.length} trovate` : `${filtered.length}${dateFilter ? ` / ${transcripts.length}` : ''}`})
+          </span>
+          {bgFetching > 0 && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 400, color: 'var(--text3)', textTransform: 'none', letterSpacing: 0 }}>
+              <span className="w-3 h-3 border border-gh-blue border-t-transparent rounded-full animate-spin" style={{ display: 'inline-block', flexShrink: 0 }} />
+              caricamento {bgFetching}…
+            </span>
+          )}
         </div>
 
         {loading ? (
@@ -159,14 +241,13 @@ export function Calls({ addToast }: Props) {
             <div className="w-5 h-5 border-2 border-gh-blue border-t-transparent rounded-full animate-spin" />
             <span style={{ color: 'var(--text3)', fontSize: 13 }}>Caricamento…</span>
           </div>
-        ) : filtered.length === 0 ? (
+        ) : searched.length === 0 ? (
           <div style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--text3)', fontSize: 14 }}>
-            {dateFilter ? 'Nessuna chiamata in questa data.' : 'Nessuna trascrizione disponibile. Le chiamate vengono salvate automaticamente.'}
-            {dateFilter && (
-              <div style={{ marginTop: 8 }}>
-                <button onClick={() => setDateFilter('')} style={{ color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontFamily: 'var(--font)' }}>
-                  Rimuovi filtro
-                </button>
+            {searchQuery.trim() ? 'Nessuna trascrizione contiene questa parola.' : dateFilter ? 'Nessuna chiamata in questa data.' : 'Nessuna trascrizione disponibile. Le chiamate vengono salvate automaticamente.'}
+            {(dateFilter || searchQuery) && (
+              <div style={{ marginTop: 8, display: 'flex', gap: 12, justifyContent: 'center' }}>
+                {dateFilter && <button onClick={() => setDateFilter('')} style={{ color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontFamily: 'var(--font)' }}>Rimuovi data</button>}
+                {searchQuery && <button onClick={() => setSearchQuery('')} style={{ color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontFamily: 'var(--font)' }}>Rimuovi ricerca</button>}
               </div>
             )}
           </div>
@@ -252,7 +333,7 @@ export function Calls({ addToast }: Props) {
                                 }}>
                                   {line.speaker === 'agent' ? 'Sofia' : 'Utente'}
                                 </span>
-                                <span style={{ fontSize: 13, color: 'var(--text2)' }}>{line.text}</span>
+                                <span style={{ fontSize: 13, color: 'var(--text2)' }}>{highlight(line.text, searchQuery)}</span>
                               </div>
                             </div>
                           ))}
@@ -267,7 +348,7 @@ export function Calls({ addToast }: Props) {
             {/* Pagination */}
             <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 12, color: 'var(--text3)' }}>
-                {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} di {filtered.length}
+                {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, searched.length)} di {searched.length}
               </span>
               <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                 <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} style={{ padding: '5px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface2)', color: page === 0 ? 'var(--text3)' : 'var(--text)', fontSize: 12, cursor: page === 0 ? 'not-allowed' : 'pointer' }}>← Prec</button>
