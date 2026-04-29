@@ -80,7 +80,7 @@ export function Email({ addToast }: Props) {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true)
-    await load(false)
+    await Promise.all([load(false), new Promise(r => setTimeout(r, 600))])
     setRefreshing(false)
   }, [load])
 
@@ -179,7 +179,7 @@ export function Email({ addToast }: Props) {
             onMouseEnter={(e) => { if (!refreshing) e.currentTarget.style.borderColor = 'var(--border2)' }}
             onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)' }}
           >
-            <span style={{ display: 'flex', animation: refreshing ? 'spin 0.7s linear infinite' : 'none' }}>
+            <span style={{ display: 'flex' }} className={refreshing ? 'animate-spin' : ''}>
               <IcRefresh />
             </span>
           </button>

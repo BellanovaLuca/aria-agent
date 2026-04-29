@@ -175,7 +175,7 @@ export function Admin({ addToast, onUserCountChange }: Props) {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true)
-    await loadUsers(false)
+    await Promise.all([loadUsers(false), new Promise(r => setTimeout(r, 600))])
     setRefreshing(false)
   }, [loadUsers])
 
@@ -276,7 +276,7 @@ export function Admin({ addToast, onUserCountChange }: Props) {
             onMouseEnter={(e) => { if (!refreshing) e.currentTarget.style.borderColor = 'var(--border2)' }}
             onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)' }}
           >
-            <span style={{ display: 'flex', animation: refreshing ? 'spin 0.7s linear infinite' : 'none' }}>
+            <span style={{ display: 'flex' }} className={refreshing ? 'animate-spin' : ''}>
               <IcRefresh />
             </span>
           </button>
