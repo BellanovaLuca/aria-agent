@@ -4,6 +4,34 @@ import { toYMD } from '../utils'
 import { DatePicker } from '../components/DatePicker'
 import type { TranscriptMeta, ToastItem } from '../types'
 
+function CopyButton({ lines }: { lines: ChatLine[] }) {
+  const [copied, setCopied] = useState(false)
+  const handle = async () => {
+    const text = lines.map(l => `${l.speaker === 'agent' ? 'Sofia' : 'Utente'}: ${l.text}`).join('\n')
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+  return (
+    <button onClick={handle} style={{
+      display: 'flex', alignItems: 'center', gap: 5,
+      padding: '4px 10px', borderRadius: 6,
+      border: '1px solid var(--border)',
+      background: copied ? 'rgba(110,231,183,.15)' : 'var(--surface)',
+      color: copied ? '#6ee7b7' : 'var(--text2)',
+      fontSize: 11, fontWeight: 500, cursor: 'pointer',
+      transition: 'background .2s, color .2s, border-color .2s',
+      borderColor: copied ? '#6ee7b7' : undefined,
+    }}>
+      {copied
+        ? <svg viewBox="0 0 20 20" fill="currentColor" width="12" height="12"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+        : <svg viewBox="0 0 20 20" fill="currentColor" width="12" height="12"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>
+      }
+      {copied ? 'Copiato!' : 'Copia'}
+    </button>
+  )
+}
+
 function highlight(text: string, query: string): React.ReactNode {
   if (!query.trim()) return text
   const q = query.toLowerCase()
@@ -80,6 +108,8 @@ export function Calls({ addToast }: Props) {
   const [page, setPage]         = useState(0)
   const [dateFilter, setDateFilter] = useState('')
   const [refreshing, setRefreshing] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [bgFetching, setBgFetching] = useState(0)
   const abortRef = useRef<AbortController | null>(null)
 
   const load = useCallback(async (showSpinner = true) => {
@@ -135,8 +165,6 @@ export function Calls({ addToast }: Props) {
     [transcripts, dateFilter]
   )
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [bgFetching, setBgFetching] = useState(0)
   const searchFetchedRef = useRef<Set<string>>(new Set())
 
   // When search is active, auto-fetch all uncached transcripts in background
@@ -309,6 +337,11 @@ export function Calls({ addToast }: Props) {
                         </div>
                       ) : (
                         <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
+                          {lines.length > 0 && (
+                            <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end' }}>
+                              <CopyButton lines={lines} />
+                            </div>
+                          )}
                           {lines.length === 0 ? (
                             <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>
                               Nessun dialogo disponibile.
