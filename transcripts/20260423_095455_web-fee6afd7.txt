@@ -1,0 +1,7 @@
+=== Chiamata: web-fee6afd7 — 2026-04-23T09:54:55.117527 ===
+
+AGENTE: Ciao! Sono Sofia del supporto IT. Come posso aiutarti oggi?
+UTENTE: Vă respect la password Mario.rosi.
+AGENTE: Perfetto, Mario.rossi! Ho resettato la password. Riceverai un'email con la nuova password temporanea e dovrai cambiarla al primo accesso. C'è altro che posso fare per te?
+
+=== Fine chiamata: 2026-04-23T09:55:25.766827 ===

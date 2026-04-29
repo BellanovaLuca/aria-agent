@@ -1,0 +1,11 @@
+=== Chiamata: web-f8fd1487 — 2026-04-23T09:32:51.231878 ===
+
+UTENTE: Ciao, vorrei settare il mio account Mario.rossi.
+AGENTE: Ciao! Sono Sofia del supporto IT. Come posso aiutarti oggi?
+Verifico il tuo account, mario.rossi.
+UTENTE: Hai resettato la password di Mario.rossi.
+AGENTE: Ciao! Sono Sofia del supporto IT. Posso aiutarti a resettare la password. L'username è "mario.rossi"?
+UTENTE: Sì.
+AGENTE: Perfetto. Ho resettato con successo la password per "mario.rossi". Riceverai un'email con la nuova password temporanea che dovrai cambiare al primo accesso. C'è altro con cui posso aiutarti?
+
+=== Fine chiamata: 2026-04-23T09:33:54.893324 ===

@@ -1,0 +1,270 @@
+{
+  "users": [
+    {
+      "username": "mario.rossi",
+      "email": "mario.rossi@example.com",
+      "full_name": "Mario Rossi",
+      "status": "active",
+      "last_reset": "2026-04-28T19:25:56.895809+00:00",
+      "created_at": "2025-01-10T10:00:00+00:00"
+    },
+    {
+      "username": "giulia.bianchi",
+      "email": "giulia.bianchi@example.com",
+      "full_name": "Giulia Bianchi",
+      "status": "active",
+      "last_reset": null,
+      "created_at": "2025-02-14T09:30:00+00:00"
+    },
+    {
+      "username": "luca.neri",
+      "email": "luca.neri@example.com",
+      "full_name": "Luca Neri",
+      "status": "locked",
+      "last_reset": null,
+      "created_at": "2025-03-01T08:00:00+00:00"
+    },
+    {
+      "username": "giovanni.barbero",
+      "email": "giovanni.barbero@email.com",
+      "full_name": "Giovanni Barbero",
+      "status": "active",
+      "last_reset": null,
+      "created_at": "2026-04-23T10:10:05.367339+00:00"
+    }
+  ],
+  "reset_history": [
+    {
+      "id": "2540d6f7-9a2d-42e5-8337-c34e75c3b673",
+      "username": "mario.rossi",
+      "channel": "email",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp484427!",
+      "requested_at": "2026-04-22T07:48:23.431270+00:00"
+    },
+    {
+      "id": "b1933241-6d3e-4dc8-b395-6e2f158567fc",
+      "username": "luca.neri",
+      "channel": "email",
+      "success": false,
+      "message": "Account locked. Contatta il supporto.",
+      "requested_at": "2026-04-22T07:49:13.514619+00:00"
+    },
+    {
+      "id": "b6d97d74-a732-443b-8968-9d70d1418736",
+      "username": "luca.neri",
+      "channel": "email",
+      "success": false,
+      "message": "Account suspended. Contatta il supporto.",
+      "requested_at": "2026-04-22T07:49:53.579601+00:00"
+    },
+    {
+      "id": "fce8d70d-2e28-49b6-a97b-97f89fd57a81",
+      "username": "mario.rossi",
+      "channel": "voice",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp594984!",
+      "requested_at": "2026-04-22T19:44:34.060149+00:00"
+    },
+    {
+      "id": "715d72fa-80bd-4bf3-8376-1f2789c3274f",
+      "username": "mario.rossi",
+      "channel": "voice",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp536634!",
+      "requested_at": "2026-04-22T20:07:57.424575+00:00"
+    },
+    {
+      "id": "6edc2140-c01d-474c-9610-ef23e094004d",
+      "username": "mario.rossi",
+      "channel": "voice",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp312989!",
+      "requested_at": "2026-04-22T20:55:47.668919+00:00"
+    },
+    {
+      "id": "5cb8ae47-a1cf-417e-9ea5-4b0f22c4e77d",
+      "username": "mario.rossi",
+      "channel": "voice",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp129107!",
+      "requested_at": "2026-04-23T07:26:30.489286+00:00"
+    },
+    {
+      "id": "6977d18e-ffba-4ac2-8276-82489239c152",
+      "username": "mario.rossi",
+      "channel": "voice",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp497650!",
+      "requested_at": "2026-04-23T07:33:38.558564+00:00"
+    },
+    {
+      "id": "20c3445a-9675-4d5b-bed5-7d86a30903e0",
+      "username": "mario.rossi",
+      "channel": "voice",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp181314!",
+      "requested_at": "2026-04-23T07:35:56.937258+00:00"
+    },
+    {
+      "id": "67f5e8ab-984d-41e0-8320-55556638c912",
+      "username": "mario.rossi",
+      "channel": "voice",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp527092!",
+      "requested_at": "2026-04-23T07:45:52.956949+00:00"
+    },
+    {
+      "id": "35fdc391-0ba3-42cc-8784-dccfc331bd6c",
+      "username": "mario.rossi",
+      "channel": "voice",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp764648!",
+      "requested_at": "2026-04-23T07:49:29.045871+00:00"
+    },
+    {
+      "id": "9791071b-a799-49bd-b201-e01fa83efb9f",
+      "username": "mario.rossi",
+      "channel": "voice",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp532690!",
+      "requested_at": "2026-04-23T07:53:48.838490+00:00"
+    },
+    {
+      "id": "52732b7e-2f09-4620-8bc0-47e7106bfb68",
+      "username": "mario.rossi",
+      "channel": "voice",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp993542!",
+      "requested_at": "2026-04-23T07:55:11.286535+00:00"
+    },
+    {
+      "id": "793cd881-24f8-484d-91fb-686a57a87a78",
+      "username": "mario.rossi",
+      "channel": "voice",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp322739!",
+      "requested_at": "2026-04-23T09:51:37.006396+00:00"
+    },
+    {
+      "id": "c1306e23-1bf7-4b4b-af0a-fb007b2e1901",
+      "username": "luca.neri",
+      "channel": "voice",
+      "success": false,
+      "message": "Account locked. Contatta il supporto.",
+      "requested_at": "2026-04-23T09:58:27.472889+00:00"
+    },
+    {
+      "id": "c3ca16cd-811b-479b-8a88-009f70482ac1",
+      "username": "luca.neri",
+      "channel": "voice",
+      "success": false,
+      "message": "Account locked. Contatta il supporto.",
+      "requested_at": "2026-04-23T10:01:01.006477+00:00"
+    },
+    {
+      "id": "5d88524a-1050-4e9b-ae16-9667f94d30c9",
+      "username": "mario.rossi",
+      "channel": "email",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp533218!",
+      "requested_at": "2026-04-23T10:02:30.959542+00:00"
+    },
+    {
+      "id": "37108fb9-62b2-445d-ad23-508ca56e13ef",
+      "username": "giovanni.barbero",
+      "channel": "email",
+      "success": false,
+      "message": "Account locked. Contatta il supporto.",
+      "requested_at": "2026-04-23T10:10:21.450099+00:00"
+    },
+    {
+      "id": "e76ce962-b8ea-4948-9800-650ea64b602f",
+      "username": "giovanni.ba",
+      "channel": "email",
+      "success": false,
+      "message": "Utente non trovato",
+      "requested_at": "2026-04-23T10:10:51.503071+00:00"
+    },
+    {
+      "id": "c84103e5-cec9-4817-89de-bc293b988132",
+      "username": "mario.rossi",
+      "channel": "email",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp335468!",
+      "requested_at": "2026-04-23T13:35:05.726471+00:00"
+    },
+    {
+      "id": "85595956-09f9-47c4-b45a-d8b4ce62cc75",
+      "username": "mario.rossi",
+      "channel": "voice",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp379110!",
+      "requested_at": "2026-04-23T13:38:45.110772+00:00"
+    },
+    {
+      "id": "8ee6e337-c1cc-449e-81fa-023c0cc5d51d",
+      "username": "mario.rossi",
+      "channel": "email",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp964494!",
+      "requested_at": "2026-04-27T08:04:10.940602+00:00"
+    },
+    {
+      "id": "1f17d077-0c12-4d44-8bd5-ad7fddd95eae",
+      "username": "mario.rossi",
+      "channel": "email",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp331959!",
+      "requested_at": "2026-04-27T08:27:02.601027+00:00"
+    },
+    {
+      "id": "94991c41-66ad-4393-b0a0-22e31f590ddc",
+      "username": "mario.rossi",
+      "channel": "email",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp126259!",
+      "requested_at": "2026-04-27T09:21:06.301625+00:00"
+    },
+    {
+      "id": "5edeac3d-b843-485e-b488-68901e068759",
+      "username": "mario.rossi",
+      "channel": "email",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp736328!",
+      "requested_at": "2026-04-27T09:22:16.390057+00:00"
+    },
+    {
+      "id": "6b5403c9-3fb8-4839-8b68-9af46af483b6",
+      "username": "mario.rossi",
+      "channel": "email",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp170007!",
+      "requested_at": "2026-04-27T09:27:36.732549+00:00"
+    },
+    {
+      "id": "fc4908eb-059b-4317-9d8a-6ca96dd50508",
+      "username": "mario.rossi",
+      "channel": "email",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp961094!",
+      "requested_at": "2026-04-27T09:28:06.785111+00:00"
+    },
+    {
+      "id": "4618db5c-3602-4120-a8b7-c4edd157bf7c",
+      "username": "mario.rossi",
+      "channel": "email",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp932449!",
+      "requested_at": "2026-04-28T09:34:41.451528+00:00"
+    },
+    {
+      "id": "8a4cfd6b-6cf0-4d18-a499-8ab4d660ad82",
+      "username": "mario.rossi",
+      "channel": "email",
+      "success": true,
+      "message": "Password resettata con successo. Password temporanea: Tmp413867!",
+      "requested_at": "2026-04-28T19:25:56.895894+00:00"
+    }
+  ]
+}

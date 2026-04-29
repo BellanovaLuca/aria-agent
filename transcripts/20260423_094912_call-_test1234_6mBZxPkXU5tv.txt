@@ -1,0 +1,11 @@
+=== Chiamata: call-_test1234_6mBZxPkXU5tv — 2026-04-23T09:49:12.108880 ===
+
+AGENTE: Buongiorno, sono Sofia del supporto IT. Come posso aiutarti oggi, in particolare con il reset della password?
+UTENTE: Vorrei la password al mio account Mario.rossi.
+AGENTE: Il reset della password è stato eseguito con successo. Riceverai una email con la nuova password temporanea, che dovrai cambiare al primo accesso. C'è altro con cui posso aiutarti?
+UTENTE: Sì, adesso vorrei resettare Luca.
+AGENTE: L'account di Luca.neri risulta bloccato. In questo caso, è necessario contattare il supporto IT. Posso aiutarti con altro?
+UTENTE: නාගරස්සයක්. චව්.
+AGENTE: Prego, buona giornata! Ricorda che sono qui per qualsiasi necessità di reset password.
+
+=== Fine chiamata: 2026-04-23T09:50:04.450958 ===

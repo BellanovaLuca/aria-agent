@@ -1,0 +1,25 @@
+# Claude Code internals
+.agents/
+.claude/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+*.env
+
+# Node
+frontend-react/node_modules/
+frontend-react/dist/
+
+# Credentials & secrets
+*_recovery_code.txt
+*.pem
+*.key
+
+# OS
+.DS_Store
+Thumbs.db

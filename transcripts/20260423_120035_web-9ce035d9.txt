@@ -1,0 +1,13 @@
+=== Chiamata: web-9ce035d9 — 2026-04-23T12:00:35.910061 ===
+
+AGENTE: Ciao! Sono Sofia del supporto IT. Immagino tu abbia bisogno di resettare la password, giusto? Come posso aiutarti?
+UTENTE: Esatto, voglio resettarla.
+AGENTE: Certo, nessun problema! È una cosa che capita a tutti. Per procedere mi serve il tuo username o l'indirizzo email aziendale.
+UTENTE: Luca.
+AGENTE: Mi dispiace, l'account risulta bloccato. In questo caso non posso eseguire il reset, dovresti contattare il supporto. C'è altro con cui posso aiutarti?
+UTENTE: No, l'ho sentita.
+AGENTE: Allora, ti auguro una buona giornata! A presto.
+UTENTE: Ciao.
+AGENTE: Grazie, ciao!
+
+=== Fine chiamata: 2026-04-23T12:01:24.761773 ===

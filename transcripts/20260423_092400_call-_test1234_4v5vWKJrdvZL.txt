@@ -1,0 +1,12 @@
+=== Chiamata: call-_test1234_4v5vWKJrdvZL — 2026-04-23T09:24:00.142453 ===
+
+AGENTE: Buongiorno, sono Sofia del supporto IT. Come posso aiutarti oggi?
+UTENTE: Vorrei resettare la password del mio account.
+AGENTE: Certo, nessun problema. Per procedere, potresti fornirmi il tuo username o l'indirizzo email del tuo account?
+UTENTE: Sì, Mario.rossi.
+AGENTE: Perfetto, l'utente è attivo. Ora eseguo il reset della password.
+UTENTE: Va bene, grazie.
+AGENTE: .
+AGENTE: Sì, ci sono. Attendo il tuo
+
+=== Fine chiamata: 2026-04-23T09:24:55.759089 ===

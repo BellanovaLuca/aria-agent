@@ -1,0 +1,13 @@
+=== Chiamata: call-_test1234_ZiNYUQj8Czzi — 2026-04-22T22:07:39.386456 ===
+
+AGENTE: Buongiorno, sono l'assistente automatico per il reset password aziendale. Come posso aiutarla?
+UTENTE: Vorrei resettare la password di Mario.rossi.
+AGENTE: Un istante, verifico l'utente.
+AGENTE: L'utente Mario.rossi esiste e l'account è attivo. Procedo con il reset della password.
+AGENTE: La password dell'utente Mario.rossi è stata resettata con successo. Riceverà un'email con la nuova password temporanea e dovrà cambiarla al primo accesso. C'è altro con cui posso aiutarla?
+UTENTE: No, grazie, va bene così.
+AGENTE: Prego, buona giornata.
+UTENTE: Ciao.
+AGENTE: Arrivederci.
+
+=== Fine chiamata: 2026-04-22T22:08:22.653871 ===

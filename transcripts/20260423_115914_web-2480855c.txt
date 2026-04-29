@@ -1,0 +1,9 @@
+=== Chiamata: web-2480855c — 2026-04-23T11:59:14.929416 ===
+
+AGENTE: Ciao, sono Sofia del supporto IT. Come posso aiutarti oggi?
+UTENTE: Vorrei recitare la password di Luca.
+AGENTE: Certo, nessun problema. Verifico un attimo la sua situazione.
+UTENTE: Vorrei resettare la password di Luca.neri.
+AGENTE: Certo, nessun problema. Controllo subito lo stato dell'account di luca.neri.
+
+=== Fine chiamata: 2026-04-23T11:59:52.863338 ===
