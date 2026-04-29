@@ -7,24 +7,31 @@ interface Props {
   color?: string
   glow?: string
   icon?: React.ReactNode
+  onClick?: () => void
+  active?: boolean
 }
 
-export const MetricCard = memo(function MetricCard({ label, value, sub, color = 'var(--text)', glow, icon }: Props) {
+export const MetricCard = memo(function MetricCard({ label, value, sub, color = 'var(--text)', glow, icon, onClick, active }: Props) {
   return (
     <div
-      className="relative overflow-hidden flex-1 min-w-0 cursor-default"
+      className="relative overflow-hidden flex-1 min-w-0"
       style={{
         background: 'var(--surface)',
-        border: '1px solid var(--border)',
+        border: `1px solid ${active ? (glow ?? 'var(--border2)') : 'var(--border)'}`,
         borderRadius: 12,
         padding: '18px 20px',
         transition: 'border-color .2s, box-shadow .2s',
+        cursor: onClick ? 'pointer' : 'default',
+        boxShadow: active && glow ? `0 0 28px ${glow}28, 0 0 0 1px ${glow}1a` : 'none',
       }}
+      onClick={onClick}
       onMouseEnter={(e) => {
+        if (active) return
         e.currentTarget.style.borderColor = glow ?? 'var(--border2)'
         if (glow) e.currentTarget.style.boxShadow = `0 0 28px ${glow}28, 0 0 0 1px ${glow}1a`
       }}
       onMouseLeave={(e) => {
+        if (active) return
         e.currentTarget.style.borderColor = 'var(--border)'
         e.currentTarget.style.boxShadow = 'none'
       }}
@@ -38,11 +45,19 @@ export const MetricCard = memo(function MetricCard({ label, value, sub, color = 
             borderRadius: '50%',
             background: glow,
             filter: 'blur(30px)',
-            opacity: 0.35,
+            opacity: active ? 0.55 : 0.35,
             transition: 'opacity .2s',
           }}
           aria-hidden="true"
         />
+      )}
+      {active && (
+        <div style={{
+          position: 'absolute', top: 10, right: 10,
+          width: 7, height: 7, borderRadius: '50%',
+          background: glow ?? 'var(--accent)',
+          boxShadow: `0 0 6px ${glow ?? 'var(--accent)'}`,
+        }} aria-hidden="true" />
       )}
       <div className="flex justify-between items-start" style={{ marginBottom: 12 }}>
         <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)' }}>

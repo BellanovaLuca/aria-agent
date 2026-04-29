@@ -179,6 +179,7 @@ export function Dashboard({ addToast }: Props) {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [histPage, setHistPage] = useState(0)
+  const [activeFilter, setActiveFilter] = useState<'voice' | 'email' | 'success' | 'fail' | null>(null)
   const timer = useRef<ReturnType<typeof setInterval>>()
 
   const load = useCallback(async (showSpinner = false) => {
@@ -234,10 +235,23 @@ export function Dashboard({ addToast }: Props) {
     }
   }, [history])
 
-  const totalPages = Math.max(1, Math.ceil(reversedHistory.length / PAGE_SIZE))
+  useEffect(() => { setHistPage(0) }, [activeFilter])
+
+  const drillFiltered = useMemo(() => {
+    if (!activeFilter) return reversedHistory
+    return reversedHistory.filter(e => {
+      if (activeFilter === 'voice')   return e.channel === 'voice'
+      if (activeFilter === 'email')   return e.channel === 'email'
+      if (activeFilter === 'success') return e.success
+      if (activeFilter === 'fail')    return !e.success
+      return true
+    })
+  }, [reversedHistory, activeFilter])
+
+  const totalPages = Math.max(1, Math.ceil(drillFiltered.length / PAGE_SIZE))
   const pagedHistory = useMemo(
-    () => reversedHistory.slice(histPage * PAGE_SIZE, (histPage + 1) * PAGE_SIZE),
-    [reversedHistory, histPage]
+    () => drillFiltered.slice(histPage * PAGE_SIZE, (histPage + 1) * PAGE_SIZE),
+    [drillFiltered, histPage]
   )
 
   if (loading) return (
@@ -279,26 +293,35 @@ export function Dashboard({ addToast }: Props) {
         <MetricCard label="Totale Richieste" value={total}
           sub={`${total} operazioni totali`}
           color="var(--text)" glow="var(--accent)"
+          onClick={() => setActiveFilter(null)}
           icon={<svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M2 3a1 1 0 011-1h5a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V3zm9 0a1 1 0 011-1h5a1 1 0 011 1v2a1 1 0 01-1 1h-5a1 1 0 01-1-1V3zm0 6a1 1 0 011-1h5a1 1 0 011 1v8a1 1 0 01-1 1h-5a1 1 0 01-1-1V9zM2 13a1 1 0 011-1h5a1 1 0 011 1v4a1 1 0 01-1 1H3a1 1 0 01-1-1v-4z"/></svg>}
         />
         <MetricCard label="Via Telefono" value={voice}
           sub={total > 0 ? `${Math.round(voice / total * 100)}% del totale` : '—'}
           color="var(--accent)" glow="var(--accent)"
+          onClick={() => setActiveFilter(f => f === 'voice' ? null : 'voice')}
+          active={activeFilter === 'voice'}
           icon={<svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>}
         />
         <MetricCard label="Via Email" value={email}
           sub={total > 0 ? `${Math.round(email / total * 100)}% del totale` : '—'}
           color="var(--accent)" glow="var(--accent)"
+          onClick={() => setActiveFilter(f => f === 'email' ? null : 'email')}
+          active={activeFilter === 'email'}
           icon={<svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>}
         />
         <MetricCard label="Successi" value={success}
           sub={total > 0 ? `${Math.round(success / total * 100)}% success rate` : '—'}
           color="var(--success)" glow="var(--success)"
+          onClick={() => setActiveFilter(f => f === 'success' ? null : 'success')}
+          active={activeFilter === 'success'}
           icon={<svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>}
         />
         <MetricCard label="Falliti" value={fail}
           sub={total > 0 ? `${Math.round(fail / total * 100)}% error rate` : '—'}
           color="var(--danger)" glow="var(--danger)"
+          onClick={() => setActiveFilter(f => f === 'fail' ? null : 'fail')}
+          active={activeFilter === 'fail'}
           icon={<span style={{ fontSize: 13, fontWeight: 700 }}>✕</span>}
         />
       </div>
@@ -328,10 +351,26 @@ export function Dashboard({ addToast }: Props) {
       {/* ── History table ── */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', flexShrink: 0 }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)' }}>
-            Cronologia Reset
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)' }}>
+              Cronologia Reset
+            </span>
+            {activeFilter && (
+              <button onClick={() => setActiveFilter(null)} style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '2px 8px 2px 10px', borderRadius: 20,
+                background: 'var(--accent-dim)', border: '1px solid var(--accent)',
+                color: 'var(--accent)', fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                lineHeight: 1.6,
+              }}>
+                {{ voice: 'Telefono', email: 'Email', success: 'Successi', fail: 'Falliti' }[activeFilter]}
+                <span style={{ fontSize: 13, lineHeight: 1 }}>×</span>
+              </button>
+            )}
+          </div>
+          <span style={{ fontSize: 12, color: 'var(--text3)' }}>
+            {activeFilter ? `${drillFiltered.length} / ${total}` : total} voci
           </span>
-          <span style={{ fontSize: 12, color: 'var(--text3)' }}>{total} voci</span>
         </div>
 
         {history.length === 0 ? (
@@ -381,7 +420,7 @@ export function Dashboard({ addToast }: Props) {
             {/* pagination — always visible below the table */}
             <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 12, color: 'var(--text3)' }}>
-                {histPage * PAGE_SIZE + 1}–{Math.min((histPage + 1) * PAGE_SIZE, total)} di {total}
+                {histPage * PAGE_SIZE + 1}–{Math.min((histPage + 1) * PAGE_SIZE, drillFiltered.length)} di {drillFiltered.length}
               </span>
               <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                 {[
