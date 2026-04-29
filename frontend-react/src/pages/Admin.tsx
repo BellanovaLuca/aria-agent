@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { apiGet, apiPost, apiPut, apiDelete } from '../hooks/useApi'
 import { StatusBadge } from '../components/StatusBadge'
 import { Avatar } from '../components/Avatar'
+import { ScrollToTop } from '../components/ScrollToTop'
 import { fmtTs } from '../utils'
 import type { User, ToastItem } from '../types'
 
@@ -158,6 +159,7 @@ export function Admin({ addToast, onUserCountChange }: Props) {
   const [simulating, setSimulating]     = useState(false)
 
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const loadUsers = useCallback(async (spinner = true) => {
     if (spinner) setLoading(true)
@@ -262,7 +264,7 @@ export function Admin({ addToast, onUserCountChange }: Props) {
   const pagedUsers = filteredUsers.slice(userPage * USER_PAGE_SIZE, (userPage + 1) * USER_PAGE_SIZE)
 
   return (
-    <div className="fade-in" style={{ padding: '28px 32px', height: '100%', overflowY: 'auto' }}>
+    <div ref={scrollRef} className="fade-in" style={{ padding: '28px 32px', height: '100%', overflowY: 'auto' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
@@ -574,6 +576,7 @@ export function Admin({ addToast, onUserCountChange }: Props) {
           </div>
         </form>
       </dialog>
+      <ScrollToTop containerRef={scrollRef} />
     </div>
   )
 }

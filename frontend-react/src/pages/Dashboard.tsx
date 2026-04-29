@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { MetricCard } from '../components/MetricCard'
 import { StatusBadge } from '../components/StatusBadge'
+import { ScrollToTop } from '../components/ScrollToTop'
 import { apiGet, apiDelete } from '../hooks/useApi'
 import { fmtTs } from '../utils'
 import type { ResetHistoryEntry, ToastItem } from '../types'
@@ -257,6 +258,7 @@ export function Dashboard({ addToast }: Props) {
   const [histPage, setHistPage] = useState(0)
   const [activeFilter, setActiveFilter] = useState<'voice' | 'email' | 'success' | 'fail' | null>(null)
   const timer = useRef<ReturnType<typeof setInterval>>()
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const load = useCallback(async (showSpinner = false) => {
     if (showSpinner) setLoading(true)
@@ -338,7 +340,7 @@ export function Dashboard({ addToast }: Props) {
   )
 
   return (
-    <div className="fade-in" style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 20, height: '100%', overflowY: 'auto' }}>
+    <div ref={scrollRef} className="fade-in" style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 20, height: '100%', overflowY: 'auto' }}>
 
       {/* ── Header ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -518,6 +520,7 @@ export function Dashboard({ addToast }: Props) {
           </>
         )}
       </div>
+      <ScrollToTop containerRef={scrollRef} />
     </div>
   )
 }

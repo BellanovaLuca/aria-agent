@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { apiGet } from '../hooks/useApi'
 import { toYMD } from '../utils'
 import { DatePicker } from '../components/DatePicker'
+import { ScrollToTop } from '../components/ScrollToTop'
 import type { TranscriptMeta, ToastItem } from '../types'
 
 function CopyButton({ lines }: { lines: ChatLine[] }) {
@@ -111,6 +112,7 @@ export function Calls({ addToast }: Props) {
   const [searchQuery, setSearchQuery] = useState('')
   const [bgFetching, setBgFetching] = useState(0)
   const abortRef = useRef<AbortController | null>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const load = useCallback(async (showSpinner = true) => {
     if (showSpinner) setLoading(true)
@@ -197,7 +199,7 @@ export function Calls({ addToast }: Props) {
   const paged = searched.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   return (
-    <div className="fade-in" style={{ padding: '28px 32px', height: '100%', overflowY: 'auto' }}>
+    <div ref={scrollRef} className="fade-in" style={{ padding: '28px 32px', height: '100%', overflowY: 'auto' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 16 }}>
@@ -392,6 +394,7 @@ export function Calls({ addToast }: Props) {
           </>
         )}
       </div>
+      <ScrollToTop containerRef={scrollRef} />
     </div>
   )
 }
