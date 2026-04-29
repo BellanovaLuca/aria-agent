@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Page } from '../types'
 
 interface Props {
@@ -97,35 +97,70 @@ function NavItem({
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
 
 const RESET_PAGES: Page[] = ['dashboard', 'email']
+const MIN_W = 180, MAX_W = 420, DEFAULT_W = 280
 
 export function Sidebar({ current, onNavigate, isDark, onThemeToggle, userCount, onTweaks }: Props) {
   const [isCollapsed, setIsCollapsed] = useState(() =>
     localStorage.getItem('aria-sidebar-collapsed') === 'true'
   )
   const [resetOpen, setResetOpen] = useState(true)
+  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_W)
+  const [dragging, setDragging]     = useState(false)
+  const [handleHover, setHandleHover] = useState(false)
+  const widthRef = useRef(sidebarWidth)
 
   useEffect(() => {
     localStorage.setItem('aria-sidebar-collapsed', String(isCollapsed))
   }, [isCollapsed])
 
   useEffect(() => {
+    widthRef.current = sidebarWidth
+  }, [sidebarWidth])
+
+  useEffect(() => {
     if (RESET_PAGES.includes(current)) setResetOpen(true)
   }, [current])
+
+  const handleDragStart = (e: React.MouseEvent) => {
+    if (isCollapsed) return
+    e.preventDefault()
+    const startX = e.clientX
+    const startW = widthRef.current
+    setDragging(true)
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+
+    const onMove = (ev: MouseEvent) => {
+      const w = Math.min(MAX_W, Math.max(MIN_W, startW + ev.clientX - startX))
+      widthRef.current = w
+      setSidebarWidth(w)
+    }
+    const onUp = () => {
+      setDragging(false)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
 
   const isResetActive = RESET_PAGES.includes(current)
 
   return (
     <aside
       style={{
-        width: isCollapsed ? 62 : 280,
+        width: isCollapsed ? 62 : sidebarWidth,
         flexShrink: 0,
+        position: 'relative',
         background: 'var(--sidebar)',
         borderRight: '1px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
         padding: '0 0 16px',
-        transition: 'width .2s ease-in-out',
+        transition: dragging ? 'none' : 'width .2s ease-in-out',
         overflow: 'hidden',
       }}
       aria-label="Navigazione principale"
@@ -327,6 +362,22 @@ export function Sidebar({ current, onNavigate, isDark, onThemeToggle, userCount,
           </div>
         </div>
       </div>
+      {/* ── Resize handle ── */}
+      {!isCollapsed && (
+        <div
+          onMouseDown={handleDragStart}
+          onMouseEnter={() => setHandleHover(true)}
+          onMouseLeave={() => setHandleHover(false)}
+          style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 6, cursor: 'col-resize', zIndex: 10 }}
+        >
+          <div style={{
+            position: 'absolute', right: 1, top: 0, bottom: 0, width: 2, borderRadius: 1,
+            background: 'var(--accent)',
+            opacity: handleHover || dragging ? 0.55 : 0,
+            transition: 'opacity .15s',
+          }} />
+        </div>
+      )}
     </aside>
   )
 }
