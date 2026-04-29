@@ -1,6 +1,6 @@
 # Aria Agent
 
-Piattaforma open-source per costruire **agenti AI multicanale** con voce, email e interfaccia web. Il progetto include un'implementazione di riferimento (**Sofia**, agente per il reset password) ma l'architettura è progettata per essere adattata a qualsiasi caso d'uso conversazionale.
+Piattaforma open-source per costruire **agenti AI multicanale** con voce, email e interfaccia web. Il progetto include un'implementazione di riferimento ma l'architettura è progettata per essere adattata a qualsiasi caso d'uso conversazionale.
 
 Stack: [LiveKit Agents](https://github.com/livekit/agents) + **Google Gemini Live** (LLM + STT + TTS nativo audio) + **React** dashboard di monitoraggio.
 
@@ -273,17 +273,6 @@ AGENTE: La password è stata resettata con successo.
 Il voice agent sottoscrive tre eventi di `AgentSession`: `user_input_transcribed`, `conversation_item_added`, `close`.
 
 > Gemini Live è un modello audio nativo — la trascrizione proviene dall'STT integrato nel modello, non da un provider esterno.
-
----
-
-## Personalità dell'agente vocale
-
-Le costanti `AGENT_NAME` e `INSTRUCTIONS` in `voice_agent/agent.py` controllano identità e comportamento. L'implementazione di riferimento definisce:
-
-- **Empatia** — riconosce frustrazione o confusione prima di procedere
-- **Naturalezza** — intercalari conversazionali, frasi brevi, niente burocratese
-- **Tool call silenzioso** — chiama i tool senza pronunciare frasi di annuncio ("Verifico…", "Un momento…"), rispondendo solo dopo aver ricevuto il risultato. Questo evita che l'utente interrompa Gemini Live nel mezzo di una chiamata al tool.
-- **Chiusura genuina** — saluto non formulaico
 
 ---
 
