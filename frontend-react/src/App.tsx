@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { Sidebar } from './components/Sidebar'
 import { ToastContainer } from './components/Toast'
 import { TweaksPanel, applyAccent } from './components/TweaksPanel'
@@ -45,7 +45,11 @@ export default function App() {
     localStorage.setItem('aria-theme', isDark ? 'dark' : 'light')
   }, [isDark])
 
-  const toggleTheme = () => setIsDark(d => !d)
+  const toggleTheme = useCallback(() => setIsDark(d => !d), [])
+  const handleTweaks = useCallback((rect: DOMRect) => {
+    setTweaksAnchor(rect)
+    setShowTweaks(t => !t)
+  }, [])
 
   return (
     <div className="flex h-screen overflow-hidden bg-gh-canvas dot-grid">
@@ -55,7 +59,7 @@ export default function App() {
         isDark={isDark}
         onThemeToggle={toggleTheme}
         userCount={userCount}
-        onTweaks={(rect) => { setTweaksAnchor(rect); setShowTweaks(t => !t) }}
+        onTweaks={handleTweaks}
       />
 
       <main className="flex-1 overflow-hidden relative flex flex-col">

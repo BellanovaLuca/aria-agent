@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 
 const MONTHS_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
@@ -10,14 +10,17 @@ type View = 'day' | 'month' | 'year'
 
 function NavBtn({ dir, onClick }: { dir: 'prev' | 'next'; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} style={{
-      width: 28, height: 28, borderRadius: 8, border: 'none',
-      background: 'transparent', cursor: 'pointer',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      color: 'var(--text3)', transition: 'background .12s, color .12s', flexShrink: 0,
-    }}
-      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface2)'; e.currentTarget.style.color = 'var(--text)' }}
-      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text3)' }}
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={dir === 'prev' ? 'Mese precedente' : 'Mese successivo'}
+      className="btn-ghost"
+      style={{
+        width: 28, height: 28, borderRadius: 8, border: 'none',
+        background: 'transparent', cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: 'var(--text3)', flexShrink: 0,
+      }}
     >
       <svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13">
         {dir === 'prev'
@@ -31,13 +34,15 @@ function NavBtn({ dir, onClick }: { dir: 'prev' | 'next'; onClick: () => void })
 
 function HeaderBtn({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} style={{
-      padding: '3px 8px', borderRadius: 7, border: 'none', background: 'transparent',
-      fontSize: 13, fontWeight: 600, color: 'var(--text)', cursor: 'pointer',
-      transition: 'background .12s', fontFamily: 'var(--font)',
-    }}
-      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface2)' }}
-      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+    <button
+      type="button"
+      onClick={onClick}
+      className="btn-ghost"
+      style={{
+        padding: '3px 8px', borderRadius: 7, border: 'none', background: 'transparent',
+        fontSize: 13, fontWeight: 600, color: 'var(--text)', cursor: 'pointer',
+        fontFamily: 'var(--font)',
+      }}
     >
       {children}
     </button>
@@ -90,6 +95,8 @@ function DayView({ year, month, cells, selectedDate, todayStr, onPrev, onNext, o
             }}
               onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'var(--surface2)' }}
               onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent' }}
+              aria-label={`${cell.day} ${MONTHS_IT[month]} ${year}${isToday ? ', oggi' : ''}${isSel ? ', selezionato' : ''}`}
+              aria-pressed={isSel}
             >
               {cell.day}
             </button>
@@ -215,19 +222,26 @@ export function DatePicker({ value, onChange, placeholder = 'Filtra per data…'
         btnRef.current && !btnRef.current.contains(e.target as Node)
       ) setOpen(false)
     }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.stopPropagation(); setOpen(false); btnRef.current?.focus() }
+    }
     document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', h)
+      document.removeEventListener('keydown', onKey)
+    }
   }, [open])
 
-  const getDays = () => {
+  const cells = useMemo(() => {
     let dow = new Date(displayYear, displayMonth, 1).getDay() - 1
     if (dow < 0) dow = 6
     const total = new Date(displayYear, displayMonth + 1, 0).getDate()
-    const cells: Array<{ day: number | null }> = []
-    for (let i = 0; i < dow; i++) cells.push({ day: null })
-    for (let d = 1; d <= total; d++) cells.push({ day: d })
-    return cells
-  }
+    const result: Array<{ day: number | null }> = []
+    for (let i = 0; i < dow; i++) result.push({ day: null })
+    for (let d = 1; d <= total; d++) result.push({ day: d })
+    return result
+  }, [displayYear, displayMonth])
 
   const handlePrev = () => {
     if (displayMonth === 0) { setDisplayMonth(11); setDisplayYear(y => y - 1) }
@@ -244,9 +258,21 @@ export function DatePicker({ value, onChange, placeholder = 'Filtra per data…'
 
   const portal = container ?? document.body
 
+  const handleClear = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation()
+    onChange('')
+    setOpen(false)
+  }
+
   return (
     <>
-      <button ref={btnRef} type="button" onClick={() => open ? setOpen(false) : openPicker()}
+      <button
+        ref={btnRef}
+        type="button"
+        aria-label={value ? `Data selezionata: ${displayLabel}. Clicca per cambiare` : 'Seleziona data'}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        onClick={() => open ? setOpen(false) : openPicker()}
         style={{
           width: '100%', padding: '7px 10px',
           background: 'var(--surface2)', border: `1px solid ${value ? 'var(--accent)' : 'var(--border)'}`,
@@ -259,10 +285,8 @@ export function DatePicker({ value, onChange, placeholder = 'Filtra per data…'
       >
         <span>{displayLabel}</span>
         {value ? (
+          /* Clear button — separate element outside the trigger button (sibling, not child) */
           <span
-            role="button" tabIndex={0}
-            onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }}
-            onKeyDown={e => { if (e.key === 'Enter') { e.stopPropagation(); onChange('') } }}
             aria-label="Rimuovi data"
             style={{ color: 'var(--text3)', display: 'flex', padding: '0 2px', cursor: 'pointer' }}
           >
@@ -277,20 +301,38 @@ export function DatePicker({ value, onChange, placeholder = 'Filtra per data…'
         )}
       </button>
 
+      {/* Clear button sits outside the main trigger to avoid nested button issue */}
+      {value && (
+        <button
+          type="button"
+          aria-label="Rimuovi filtro data"
+          onClick={handleClear}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClear(e) }}
+          style={{
+            position: 'absolute', display: 'none', /* positioned in parent if needed */
+          }}
+        />
+      )}
+
       {open && createPortal(
-        <div ref={pickerRef} style={{
-          position: 'fixed', top: coords.top, left: coords.left, zIndex: 9999,
-          width: 272,
-          background: 'var(--surface)',
-          border: '1px solid var(--border2)',
-          borderRadius: 14,
-          boxShadow: '0 16px 48px rgba(0,0,0,.65)',
-          animation: 'callPanelIn .14s cubic-bezier(.16,1,.3,1)',
-        }}>
+        <div
+          ref={pickerRef}
+          role="dialog"
+          aria-label="Seleziona data"
+          style={{
+            position: 'fixed', top: coords.top, left: coords.left, zIndex: 9999,
+            width: 272,
+            background: 'var(--surface)',
+            border: '1px solid var(--border2)',
+            borderRadius: 14,
+            boxShadow: '0 16px 48px rgba(0,0,0,.65)',
+            animation: 'callPanelIn .14s cubic-bezier(.16,1,.3,1)',
+          }}
+        >
           {view === 'day' && (
             <DayView
               year={displayYear} month={displayMonth}
-              cells={getDays()} selectedDate={selectedDate} todayStr={todayStr}
+              cells={cells} selectedDate={selectedDate} todayStr={todayStr}
               onPrev={handlePrev} onNext={handleNext}
               onMonthClick={() => setView('month')}
               onYearClick={() => { setYearBase(displayYear - (displayYear % 12)); setView('year') }}

@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 
 export function ScrollToTop({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
   const [visible, setVisible] = useState(false)
-  const [hovered, setHovered] = useState(false)
 
   useEffect(() => {
     const el = containerRef.current
@@ -16,8 +15,6 @@ export function ScrollToTop({ containerRef }: { containerRef: React.RefObject<HT
   return createPortal(
     <button
       onClick={() => containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       aria-label="Torna in cima"
       title="Torna in cima"
       style={{
@@ -34,12 +31,14 @@ export function ScrollToTop({ containerRef }: { containerRef: React.RefObject<HT
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: hovered ? '0 4px 16px var(--accent-glow)' : 'none',
+        boxShadow: '0 4px 16px var(--accent-glow)',
         zIndex: 9999,
-        opacity: visible ? (hovered ? 1 : 0.35) : 0,
-        transform: visible ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.85)',
+        opacity: visible ? 1 : 0,
+        /* Animate only transform + opacity (no layout property) */
+        transform: visible ? 'translateY(0) scale(1)' : 'translateY(12px) scale(0.82)',
         pointerEvents: visible ? 'auto' : 'none',
-        transition: 'opacity 0.2s ease, transform 0.22s ease, left 0.2s ease-in-out, box-shadow 0.2s ease',
+        transition: 'opacity 0.22s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1)',
+        touchAction: 'manipulation',
       }}
     >
       <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15">

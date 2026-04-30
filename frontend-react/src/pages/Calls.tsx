@@ -3,6 +3,7 @@ import { apiGet } from '../hooks/useApi'
 import { toYMD } from '../utils'
 import { DatePicker } from '../components/DatePicker'
 import { ScrollToTop } from '../components/ScrollToTop'
+import { IcRefresh, IcPhone, IcWeb, IcChevron } from '../components/icons'
 import type { TranscriptMeta, ToastItem } from '../types'
 
 function CopyButton({ lines }: { lines: ChatLine[] }) {
@@ -67,31 +68,6 @@ function parseChat(raw: string): ChatLine[] {
     }
   }
   return lines
-}
-
-function IcRefresh() {
-  return <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd"/></svg>
-}
-function IcPhone() {
-  return <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
-}
-function IcWeb() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
-      <circle cx="12" cy="12" r="9"/>
-      <path d="M2 12h20"/>
-      <path d="M12 3c-2.5 2.8-4 5.8-4 9s1.5 6.2 4 9"/>
-      <path d="M12 3c2.5 2.8 4 5.8 4 9s-1.5 6.2-4 9"/>
-    </svg>
-  )
-}
-function IcChevron({ open }: { open: boolean }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"
-      style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform .2s' }}>
-      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
-    </svg>
-  )
 }
 
 interface Props {
@@ -202,9 +178,9 @@ export function Calls({ addToast }: Props) {
     <div ref={scrollRef} className="fade-in" style={{ padding: '28px 32px', height: '100%', overflowY: 'auto' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 16 }}>
+      <div className="section-in" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 16 }}>
         <div style={{ flexShrink: 0 }}>
-          <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 2 }}>Chiamate con Sofia</h1>
+          <h1 className="heading-display" style={{ fontSize: 28, marginBottom: 2 }}>Chiamate con Sofia</h1>
           <p style={{ fontSize: 13, color: 'var(--text3)' }}>Registrazioni e log delle sessioni vocali</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -241,7 +217,7 @@ export function Calls({ addToast }: Props) {
             <DatePicker value={dateFilter} onChange={(v) => { setDateFilter(v); setPage(0) }} placeholder="Filtra per data…" />
           </div>
           <button onClick={handleRefresh} disabled={refreshing} aria-label="Aggiorna"
-            style={{ color: 'var(--text2)', padding: 7, borderRadius: 7, border: '1px solid var(--border)', background: 'var(--surface2)', cursor: refreshing ? 'default' : 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' }}
+            style={{ color: 'var(--text2)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', cursor: refreshing ? 'default' : 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' }}
             onMouseEnter={(e) => { if (!refreshing) e.currentTarget.style.borderColor = 'var(--border2)' }}
             onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)' }}
           >
@@ -288,7 +264,7 @@ export function Calls({ addToast }: Props) {
               const phone = isPhone(t.label)
               const content = cache[t.filename]
               const isFetching = fetching.has(t.filename)
-              const lines = content ? parseChat(content) : []
+              const lines = open && content ? parseChat(content) : []
               const { date, caller } = parseLabel(t.label)
               const callerLabel = caller || (phone ? 'Chiamata anonima' : 'Sessione web')
               const globalIdx = transcriptIndexMap.get(t.filename) ?? 0
@@ -321,7 +297,7 @@ export function Calls({ addToast }: Props) {
                           Trascrizione #{num}
                         </div>
                         <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 1 }}>{callerLabel}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--mono)' }}>{date}</div>
+                        <div className="tabular" style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--mono)' }}>{date}</div>
                       </div>
                     </div>
                     <div style={{ paddingTop: 3, color: 'var(--accent)' }}>
@@ -382,7 +358,7 @@ export function Calls({ addToast }: Props) {
 
             {/* Pagination */}
             <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 12, color: 'var(--text3)' }}>
+              <span className="tabular" style={{ fontSize: 12, color: 'var(--text3)' }}>
                 {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, searched.length)} di {searched.length}
               </span>
               <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>

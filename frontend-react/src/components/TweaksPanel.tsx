@@ -1,3 +1,6 @@
+import { useEffect } from 'react'
+import { IcClose } from './icons'
+
 const ACCENT_SWATCHES = [
   { color: '#a490ff', label: 'Viola' },
   { color: '#22d8e8', label: 'Ciano' },
@@ -35,22 +38,31 @@ interface Props {
 export function TweaksPanel({ state, onChange, onClose, anchor }: Props) {
   const panelHeight = 130
   const top = anchor.top - panelHeight - 8
+
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.stopPropagation(); onClose() } }
+    document.addEventListener('keydown', h)
+    return () => document.removeEventListener('keydown', h)
+  }, [onClose])
+
   return (
     <>
-      {/* Backdrop */}
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 49 }} />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 49 }} aria-hidden="true" />
 
-      {/* Panel */}
-      <div style={{
-        position: 'fixed', top, left: anchor.left, zIndex: 50,
-        width: 240,
-        background: 'var(--surface)',
-        border: '1px solid var(--border2)',
-        borderRadius: 14,
-        boxShadow: '0 20px 60px rgba(0,0,0,.6)',
-        overflow: 'hidden',
-      }}>
-        {/* Header */}
+      <div
+        role="dialog"
+        aria-label="Personalizza"
+        style={{
+          position: 'fixed', top, left: anchor.left, zIndex: 50,
+          width: 240,
+          background: 'var(--surface)',
+          border: '1px solid var(--border2)',
+          borderRadius: 14,
+          boxShadow: '0 20px 60px rgba(0,0,0,.6)',
+          overflow: 'hidden',
+          animation: 'callPanelIn .16s cubic-bezier(.16,1,.3,1)',
+        }}
+      >
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '14px 16px', borderBottom: '1px solid var(--border)',
@@ -58,14 +70,14 @@ export function TweaksPanel({ state, onChange, onClose, anchor }: Props) {
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Personalizza</span>
           <button
             onClick={onClose}
-            style={{ padding: 5, borderRadius: 6, background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', display: 'flex', lineHeight: 1 }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text3)' }}
             aria-label="Chiudi"
+            className="btn-ghost"
+            style={{
+              padding: 5, borderRadius: 6, background: 'none', border: 'none',
+              color: 'var(--text3)', cursor: 'pointer', display: 'flex', lineHeight: 1,
+            }}
           >
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="13" height="13">
-              <path d="M3 3l10 10M13 3L3 13"/>
-            </svg>
+            <IcClose size={13} />
           </button>
         </div>
 
@@ -81,6 +93,7 @@ export function TweaksPanel({ state, onChange, onClose, anchor }: Props) {
                   key={color}
                   onClick={() => { applyAccent(color); onChange({ accent: color }) }}
                   aria-label={label}
+                  aria-pressed={active}
                   title={label}
                   style={{
                     width: 28, height: 28, borderRadius: '50%',

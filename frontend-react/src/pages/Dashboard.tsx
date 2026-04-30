@@ -2,9 +2,18 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { MetricCard } from '../components/MetricCard'
 import { StatusBadge } from '../components/StatusBadge'
 import { ScrollToTop } from '../components/ScrollToTop'
+import { ConfirmDialog } from '../components/ConfirmDialog'
+import { IcRefresh, IcTrash, IcPhone, IcEmailIcon, IcCheckCircle } from '../components/icons'
 import { apiGet, apiDelete } from '../hooks/useApi'
 import { fmtTs } from '../utils'
 import type { ResetHistoryEntry, ToastItem } from '../types'
+
+/* ── Hoisted icon nodes (stable references → MetricCard memo preserved) ──── */
+const IC_TOTAL = <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path d="M2 3a1 1 0 011-1h5a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V3zm9 0a1 1 0 011-1h5a1 1 0 011 1v2a1 1 0 01-1 1h-5a1 1 0 01-1-1V3zm0 6a1 1 0 011-1h5a1 1 0 011 1v8a1 1 0 01-1 1h-5a1 1 0 01-1-1V9zM2 13a1 1 0 011-1h5a1 1 0 011 1v4a1 1 0 01-1 1H3a1 1 0 01-1-1v-4z"/></svg>
+const IC_PHONE = <IcPhone size={16} />
+const IC_EMAIL = <IcEmailIcon size={16} />
+const IC_OK    = <IcCheckCircle size={14} />
+const IC_FAIL  = <span style={{ fontSize: 13, fontWeight: 700 }}>✕</span>
 
 /* ── Custom SVG Charts ───────────────────────────────────────────────────── */
 
@@ -80,8 +89,8 @@ function DonutChart({ phone, email, total }: { phone: number; email: number; tot
               strokeDasharray={`${emailDash} ${circ}`} strokeDashoffset={emailOffset} strokeLinecap="round" strokeOpacity={0.4} />
           )}
         </g>
-        <text x={cx} y={cy - 6} textAnchor="middle" fill="var(--text)" fontSize="26" fontWeight="700" fontFamily="DM Sans">{total}</text>
-        <text x={cx} y={cy + 14} textAnchor="middle" fill="var(--text2)" fontSize="12" fontFamily="DM Sans">totale</text>
+        <text x={cx} y={cy - 6} textAnchor="middle" fill="var(--text)" fontSize="26" fontWeight="700" fontFamily="Geist, system-ui">{total}</text>
+        <text x={cx} y={cy + 14} textAnchor="middle" fill="var(--text2)" fontSize="12" fontFamily="Geist, system-ui">totale</text>
       </svg>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {[
@@ -91,7 +100,7 @@ function DonutChart({ phone, email, total }: { phone: number; email: number; tot
           <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.color, opacity: item.opacity, boxShadow: `0 0 8px ${item.color}`, flexShrink: 0 }} />
             <span style={{ fontSize: 13, color: 'var(--text2)' }}>{item.label}</span>
-            <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginLeft: 4 }}>{item.val}</span>
+            <span className="tabular" style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginLeft: 4 }}>{item.val}</span>
           </div>
         ))}
       </div>
@@ -153,7 +162,7 @@ function BarChartSVG({
                 fill="#fca5a5" opacity={isHov || isActive ? 1 : 0.75} style={{ transition: 'opacity .15s' }} />
               <text x={x + barW + gap / 2} y={h + 32} textAnchor="middle"
                 fill={isActive ? 'var(--accent)' : 'var(--text2)'}
-                fontSize="12" fontWeight={isActive ? '700' : '400'} fontFamily="DM Sans">
+                fontSize="12" fontWeight={isActive ? '700' : '400'} fontFamily="Geist, system-ui">
                 {d.label}
               </text>
             </g>
@@ -162,10 +171,9 @@ function BarChartSVG({
         <line x1={20} y1={h} x2={totalW + 20} y2={h} stroke="var(--border)" strokeWidth="1" />
       </svg>
 
-      {/* Floating tooltip */}
       {hoveredData && mousePos && (() => {
         const tot = hoveredData.ok + hoveredData.fail
-        const okPct  = tot > 0 ? Math.round(hoveredData.ok   / tot * 100) : 0
+        const okPct   = tot > 0 ? Math.round(hoveredData.ok   / tot * 100) : 0
         const failPct = tot > 0 ? Math.round(hoveredData.fail / tot * 100) : 0
         const flipX = mousePos.x > 160
         return (
@@ -173,27 +181,21 @@ function BarChartSVG({
             position: 'absolute',
             left: flipX ? mousePos.x - 154 : mousePos.x + 12,
             top: Math.max(0, mousePos.y - 20),
-            background: 'var(--surface2)',
-            border: '1px solid var(--border2)',
-            borderRadius: 8,
-            padding: '10px 12px',
-            pointerEvents: 'none',
-            zIndex: 10,
-            width: 142,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+            background: 'var(--surface2)', border: '1px solid var(--border2)',
+            borderRadius: 8, padding: '10px 12px',
+            pointerEvents: 'none', zIndex: 10, width: 142,
+            boxShadow: '0 4px 20px rgba(0,0,0,.35)',
           }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
-              {hoveredData.label}
-            </div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>{hoveredData.label}</div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
               <span style={{ fontSize: 11, color: '#6ee7b7' }}>Successi</span>
-              <span style={{ fontSize: 11, color: 'var(--text)', fontWeight: 600 }}>
+              <span className="tabular" style={{ fontSize: 11, color: 'var(--text)', fontWeight: 600 }}>
                 {hoveredData.ok} <span style={{ color: 'var(--text3)', fontWeight: 400 }}>{okPct}%</span>
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 11, color: '#fca5a5' }}>Falliti</span>
-              <span style={{ fontSize: 11, color: 'var(--text)', fontWeight: 600 }}>
+              <span className="tabular" style={{ fontSize: 11, color: 'var(--text)', fontWeight: 600 }}>
                 {hoveredData.fail} <span style={{ color: 'var(--text3)', fontWeight: 400 }}>{failPct}%</span>
               </span>
             </div>
@@ -218,7 +220,203 @@ function BarChartSVG({
   )
 }
 
-/* ── Btn helpers ─────────────────────────────────────────────────────────── */
+/* ── Hero visual — floating keys (canvas, interactive) ───────────────────── */
+
+const KEY_COLORS = ['#a490ff', '#4ade80', '#22d8e8', '#a490ff', '#a490ff', '#fbbf24']
+
+interface KParticle {
+  x: number; y: number
+  vx: number; vy: number
+  size: number; color: string; alpha: number; rotation: number
+}
+
+function spawnKey(W: number, H: number, x?: number, y?: number): KParticle {
+  const color = KEY_COLORS[Math.floor(Math.random() * KEY_COLORS.length)]
+  const size  = 10 + Math.random() * 12
+  return {
+    x: x ?? -size,
+    y: y ?? 4 + Math.random() * Math.max(0, H - size - 8),
+    vx: 28 + Math.random() * 24,
+    vy: (Math.random() - 0.5) * 10,
+    size, color,
+    alpha: 0.55 + Math.random() * 0.40,
+    rotation: (Math.random() - 0.5) * 0.5,
+  }
+}
+
+function renderKey(ctx: CanvasRenderingContext2D, p: KParticle, alpha: number) {
+  const s = p.size / 20
+  ctx.save()
+  ctx.translate(p.x + p.size / 2, p.y + p.size / 2)
+  ctx.rotate(p.rotation)
+  ctx.globalAlpha = Math.max(0, Math.min(1, alpha))
+  ctx.strokeStyle = p.color
+  ctx.lineCap = 'round'
+  ctx.lineJoin = 'round'
+  ctx.translate(-10 * s, -10 * s)
+  ctx.lineWidth = 1.8 * s
+  ctx.beginPath(); ctx.arc(7 * s, 7 * s, 4 * s, 0, Math.PI * 2); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(10 * s, 10 * s); ctx.lineTo(17 * s, 17 * s); ctx.stroke()
+  ctx.lineWidth = 1.5 * s
+  ctx.beginPath(); ctx.moveTo(14 * s, 14 * s); ctx.lineTo(14 * s, 16.5 * s); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(16 * s, 16 * s); ctx.lineTo(16 * s, 18 * s);   ctx.stroke()
+  ctx.restore()
+}
+
+function renderLock(ctx: CanvasRenderingContext2D, cx: number, cy: number, alpha: number, glow: number) {
+  ctx.save()
+  ctx.shadowColor = '#a490ff'
+  ctx.shadowBlur = 8 + glow * 22
+  ctx.globalAlpha = alpha
+  ctx.strokeStyle = '#c4b0ff'
+  ctx.lineWidth = 1.8
+  ctx.lineCap = 'round'
+  const bx = cx - 7, by = cy - 1, bw = 14, bh = 11, br = 2
+  ctx.beginPath()
+  ctx.moveTo(bx + br, by); ctx.lineTo(bx + bw - br, by)
+  ctx.arcTo(bx + bw, by, bx + bw, by + br, br)
+  ctx.lineTo(bx + bw, by + bh - br)
+  ctx.arcTo(bx + bw, by + bh, bx + bw - br, by + bh, br)
+  ctx.lineTo(bx + br, by + bh)
+  ctx.arcTo(bx, by + bh, bx, by + bh - br, br)
+  ctx.lineTo(bx, by + br)
+  ctx.arcTo(bx, by, bx + br, by, br)
+  ctx.closePath(); ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(cx - 4, cy - 1)
+  ctx.arc(cx, cy - 5, 4, Math.PI * 0.9, Math.PI * 0.1)
+  ctx.lineTo(cx + 4, cy - 1); ctx.stroke()
+  ctx.fillStyle = '#c4b0ff'
+  ctx.beginPath(); ctx.arc(cx, cy + 4, 2.2, 0, Math.PI * 2); ctx.fill()
+  ctx.restore()
+}
+
+function KeysVisual() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const mouseRef  = useRef({ x: -9999, y: -9999 })
+  const stateRef  = useRef<{
+    particles: KParticle[]; lastTime: number; lockGlow: number; W: number; H: number
+  } | null>(null)
+  const rafRef = useRef(0)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const parent = canvas.parentElement!
+    const dpr = window.devicePixelRatio || 1
+    const W = parent.clientWidth
+    const H = parent.clientHeight
+    canvas.width  = W * dpr
+    canvas.height = H * dpr
+    const ctx = canvas.getContext('2d')!
+    ctx.scale(dpr, dpr)
+
+    const state = { particles: [] as KParticle[], lastTime: 0, lockGlow: 0, W, H }
+    stateRef.current = state
+
+    for (let i = 0; i < 9; i++) {
+      const p = spawnKey(W, H)
+      p.x = Math.random() * (W - 32)
+      state.particles.push(p)
+    }
+
+    const lockX = W - 12
+    const lockY = H / 2
+
+    function tick(ts: number) {
+      rafRef.current = requestAnimationFrame(tick)
+      if (!state.lastTime) { state.lastTime = ts; return }
+      const dt = Math.min((ts - state.lastTime) / 1000, 0.05)
+      state.lastTime = ts
+      ctx.clearRect(0, 0, W, H)
+
+      for (let i = 0; i < 4; i++) {
+        const ly = 10 + i * 20
+        const g = ctx.createLinearGradient(0, 0, W - 28, 0)
+        g.addColorStop(0, 'transparent'); g.addColorStop(0.15, '#34326840')
+        g.addColorStop(0.85, '#34326840'); g.addColorStop(1, 'transparent')
+        ctx.strokeStyle = g; ctx.lineWidth = 0.7; ctx.globalAlpha = 1
+        ctx.beginPath(); ctx.moveTo(0, ly); ctx.lineTo(W - 28, ly); ctx.stroke()
+      }
+
+      const { x: mx, y: my } = mouseRef.current
+
+      for (let i = state.particles.length - 1; i >= 0; i--) {
+        const p = state.particles[i]
+        const dx = mx - (p.x + p.size / 2)
+        const dy = my - (p.y + p.size / 2)
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        if (dist < 75 && dist > 1) {
+          const f = (75 - dist) / 75
+          p.vx += (dx / dist) * f * 150 * dt
+          p.vy += (dy / dist) * f * 150 * dt
+        }
+
+        p.vy *= Math.pow(0.04, dt)
+        p.vx += (35 - p.vx) * dt * 1.2
+        p.vy  = Math.max(-55, Math.min(55, p.vy))
+        p.x  += p.vx * dt
+        p.y  += p.vy * dt
+
+        if (p.y < 0)          { p.y = 0;          p.vy =  Math.abs(p.vy) * 0.4 }
+        if (p.y > H - p.size) { p.y = H - p.size; p.vy = -Math.abs(p.vy) * 0.4 }
+
+        const edgeX = lockX - 22
+        let a = p.alpha
+        if (p.x > edgeX - 15) a *= Math.max(0, (edgeX - p.x) / 15)
+        if (p.x < 8) a *= p.x / 8
+
+        if (p.x > edgeX) {
+          state.lockGlow = 1
+          state.particles.splice(i, 1)
+          state.particles.unshift(spawnKey(W, H))
+          continue
+        }
+
+        renderKey(ctx, p, a)
+      }
+
+      state.lockGlow = Math.max(0, state.lockGlow - dt * 1.5)
+      renderLock(ctx, lockX, lockY, 0.85 + state.lockGlow * 0.15, state.lockGlow)
+    }
+
+    rafRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [])
+
+  const onMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const r = canvasRef.current!.getBoundingClientRect()
+    mouseRef.current = { x: e.clientX - r.left, y: e.clientY - r.top }
+  }, [])
+
+  const onMouseLeave = useCallback(() => { mouseRef.current = { x: -9999, y: -9999 } }, [])
+
+  const onClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const s = stateRef.current; if (!s) return
+    const r = canvasRef.current!.getBoundingClientRect()
+    const p = spawnKey(s.W, s.H, e.clientX - r.left - 8, e.clientY - r.top - 8)
+    p.vx = 35 + Math.random() * 20
+    p.vy = (Math.random() - 0.5) * 20
+    s.particles.push(p)
+  }, [])
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: 82, overflow: 'hidden' }}>
+      <canvas
+        ref={canvasRef}
+        style={{ display: 'block', width: '100%', height: '100%', cursor: 'crosshair' }}
+        onMouseMove={onMouseMove}
+        onMouseLeave={onMouseLeave}
+        onClick={onClick}
+        aria-hidden="true"
+      />
+    </div>
+  )
+}
+
+const HERO_VISUAL = <KeysVisual />
+
+/* ── Button styles ───────────────────────────────────────────────────────── */
 
 const btnDanger: React.CSSProperties = {
   display: 'flex', alignItems: 'center', gap: 6,
@@ -235,14 +433,6 @@ const btnSecondary: React.CSSProperties = {
   transition: 'border-color .15s', cursor: 'pointer',
 }
 
-/* ── Trash icon ─────────────────────────────────────────────────────────── */
-function IcTrash() {
-  return <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/></svg>
-}
-function IcRefresh() {
-  return <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd"/></svg>
-}
-
 /* ── Component ───────────────────────────────────────────────────────────── */
 
 interface Props {
@@ -257,6 +447,7 @@ export function Dashboard({ addToast }: Props) {
   const [refreshing, setRefreshing] = useState(false)
   const [histPage, setHistPage] = useState(0)
   const [activeFilter, setActiveFilter] = useState<'voice' | 'email' | 'success' | 'fail' | null>(null)
+  const [confirmClear, setConfirmClear] = useState(false)
   const timer = useRef<ReturnType<typeof setInterval>>()
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -281,8 +472,8 @@ export function Dashboard({ addToast }: Props) {
     setRefreshing(false)
   }, [load])
 
-  const handleClear = async () => {
-    if (!confirm('Azzerare tutta la cronologia dei reset?')) return
+  const handleClear = useCallback(async () => {
+    setConfirmClear(false)
     try {
       await apiDelete('/api/reset-history')
       setHistory([])
@@ -291,7 +482,14 @@ export function Dashboard({ addToast }: Props) {
     } catch (e: unknown) {
       addToast('error', `Errore: ${e instanceof Error ? e.message : e}`)
     }
-  }
+  }, [addToast])
+
+  /* Stable filter callbacks — MetricCard memo stays intact */
+  const setFilterNull    = useCallback(() => setActiveFilter(null), [])
+  const toggleFilterVoice   = useCallback(() => setActiveFilter(f => f === 'voice'   ? null : 'voice'), [])
+  const toggleFilterEmail   = useCallback(() => setActiveFilter(f => f === 'email'   ? null : 'email'), [])
+  const toggleFilterSuccess = useCallback(() => setActiveFilter(f => f === 'success' ? null : 'success'), [])
+  const toggleFilterFail    = useCallback(() => setActiveFilter(f => f === 'fail'    ? null : 'fail'), [])
 
   const { total, voice, email, success, fail, barData, reversedHistory } = useMemo(() => {
     let voice = 0, email = 0, success = 0
@@ -309,7 +507,7 @@ export function Dashboard({ addToast }: Props) {
         { label: 'Telefono', ok: voiceOk, fail: voiceFail },
         { label: 'Email',    ok: emailOk, fail: emailFail },
       ],
-      reversedHistory: [...history].reverse(),
+      reversedHistory: history.toReversed(),
     }
   }, [history])
 
@@ -340,16 +538,20 @@ export function Dashboard({ addToast }: Props) {
   )
 
   return (
-    <div ref={scrollRef} className="fade-in" style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 20, height: '100%', overflowY: 'auto' }}>
+    <div ref={scrollRef} style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 20, height: '100%', overflowY: 'auto' }}>
 
       {/* ── Header ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="section-in" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 2 }}>Monitoraggio Reset Password</h1>
+          <h1 className="heading-display" style={{ fontSize: 28, color: 'var(--text)', marginBottom: 4 }}>
+            Monitoraggio Reset
+          </h1>
           <p style={{ fontSize: 13, color: 'var(--text3)' }}>Monitoraggio in tempo reale</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button style={{ ...btnSecondary, cursor: refreshing ? 'default' : 'pointer' }} onClick={handleRefresh} disabled={refreshing} aria-label="Aggiorna"
+          <button
+            style={{ ...btnSecondary, cursor: refreshing ? 'default' : 'pointer' }}
+            onClick={handleRefresh} disabled={refreshing} aria-label="Aggiorna"
             onMouseEnter={(e) => { if (!refreshing) e.currentTarget.style.borderColor = 'var(--border2)' }}
             onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)' }}
           >
@@ -357,7 +559,9 @@ export function Dashboard({ addToast }: Props) {
               <IcRefresh />
             </span>
           </button>
-          <button style={btnDanger} onClick={handleClear}
+          <button
+            style={btnDanger}
+            onClick={() => setConfirmClear(true)}
             onMouseEnter={(e) => { e.currentTarget.style.background = '#f8717130' }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--danger-dim)' }}
           >
@@ -366,49 +570,59 @@ export function Dashboard({ addToast }: Props) {
         </div>
       </div>
 
-      {/* ── Metrics ── */}
-      <div style={{ display: 'flex', gap: 12 }}>
-        <MetricCard label="Totale Richieste" value={total}
-          sub={`${total} operazioni totali`}
-          color="var(--text)" glow="var(--accent)"
-          onClick={() => setActiveFilter(null)}
-          icon={<svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M2 3a1 1 0 011-1h5a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V3zm9 0a1 1 0 011-1h5a1 1 0 011 1v2a1 1 0 01-1 1h-5a1 1 0 01-1-1V3zm0 6a1 1 0 011-1h5a1 1 0 011 1v8a1 1 0 01-1 1h-5a1 1 0 01-1-1V9zM2 13a1 1 0 011-1h5a1 1 0 011 1v4a1 1 0 01-1 1H3a1 1 0 01-1-1v-4z"/></svg>}
+      {/* ── Hero metric + row ── */}
+      <div className="section-in" style={{ animationDelay: '50ms', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* Hero: totale */}
+        <MetricCard
+          hero
+          label="Totale Richieste"
+          value={total}
+          sub={`${total} operazioni registrate`}
+          color="var(--text)"
+          glow="var(--accent)"
+          onClick={setFilterNull}
+          icon={IC_TOTAL}
+          visual={HERO_VISUAL}
         />
-        <MetricCard label="Via Telefono" value={voice}
-          sub={total > 0 ? `${Math.round(voice / total * 100)}% del totale` : '—'}
-          color="var(--accent)" glow="var(--accent)"
-          onClick={() => setActiveFilter(f => f === 'voice' ? null : 'voice')}
-          active={activeFilter === 'voice'}
-          icon={<svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>}
-        />
-        <MetricCard label="Via Email" value={email}
-          sub={total > 0 ? `${Math.round(email / total * 100)}% del totale` : '—'}
-          color="var(--accent)" glow="var(--accent)"
-          onClick={() => setActiveFilter(f => f === 'email' ? null : 'email')}
-          active={activeFilter === 'email'}
-          icon={<svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>}
-        />
-        <MetricCard label="Successi" value={success}
-          sub={total > 0 ? `${Math.round(success / total * 100)}% success rate` : '—'}
-          color="var(--success)" glow="var(--success)"
-          onClick={() => setActiveFilter(f => f === 'success' ? null : 'success')}
-          active={activeFilter === 'success'}
-          icon={<svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>}
-        />
-        <MetricCard label="Falliti" value={fail}
-          sub={total > 0 ? `${Math.round(fail / total * 100)}% error rate` : '—'}
-          color="var(--danger)" glow="var(--danger)"
-          onClick={() => setActiveFilter(f => f === 'fail' ? null : 'fail')}
-          active={activeFilter === 'fail'}
-          icon={<span style={{ fontSize: 13, fontWeight: 700 }}>✕</span>}
-        />
+
+        {/* 4 small metrics */}
+        <div style={{ display: 'flex', gap: 12 }}>
+          <MetricCard label="Via Telefono" value={voice}
+            sub={total > 0 ? `${Math.round(voice / total * 100)}% del totale` : '—'}
+            color="var(--accent)" glow="var(--accent)"
+            onClick={toggleFilterVoice}
+            active={activeFilter === 'voice'}
+            icon={IC_PHONE}
+          />
+          <MetricCard label="Via Email" value={email}
+            sub={total > 0 ? `${Math.round(email / total * 100)}% del totale` : '—'}
+            color="var(--accent)" glow="var(--accent)"
+            onClick={toggleFilterEmail}
+            active={activeFilter === 'email'}
+            icon={IC_EMAIL}
+          />
+          <MetricCard label="Successi" value={success}
+            sub={total > 0 ? `${Math.round(success / total * 100)}% success rate` : '—'}
+            color="var(--success)" glow="var(--success)"
+            onClick={toggleFilterSuccess}
+            active={activeFilter === 'success'}
+            icon={IC_OK}
+          />
+          <MetricCard label="Falliti" value={fail}
+            sub={total > 0 ? `${Math.round(fail / total * 100)}% error rate` : '—'}
+            color="var(--danger)" glow="var(--danger)"
+            onClick={toggleFilterFail}
+            active={activeFilter === 'fail'}
+            icon={IC_FAIL}
+          />
+        </div>
       </div>
 
       {/* ── Charts ── */}
       {total > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div className="section-in" style={{ animationDelay: '100ms', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px 24px' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 20 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 20 }}>
               Distribuzione per canale
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -416,7 +630,7 @@ export function Dashboard({ addToast }: Props) {
             </div>
           </div>
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px 24px' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 16 }}>
               Esito per canale
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -431,19 +645,18 @@ export function Dashboard({ addToast }: Props) {
       )}
 
       {/* ── History table ── */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', flexShrink: 0 }}>
+      <div className="section-in" style={{ animationDelay: '160ms', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', flexShrink: 0 }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)' }}>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)' }}>
               Cronologia Reset
             </span>
             {activeFilter && (
-              <button onClick={() => setActiveFilter(null)} style={{
+              <button onClick={setFilterNull} style={{
                 display: 'flex', alignItems: 'center', gap: 5,
                 padding: '2px 8px 2px 10px', borderRadius: 20,
                 background: 'var(--accent-dim)', border: '1px solid var(--accent)',
-                color: 'var(--accent)', fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                lineHeight: 1.6,
+                color: 'var(--accent)', fontSize: 11, fontWeight: 600, cursor: 'pointer', lineHeight: 1.6,
               }}>
                 {{ voice: 'Telefono', email: 'Email', success: 'Successi', fail: 'Falliti' }[activeFilter]}
                 <span style={{ fontSize: 13, lineHeight: 1 }}>×</span>
@@ -461,13 +674,12 @@ export function Dashboard({ addToast }: Props) {
           </div>
         ) : (
           <>
-            {/* table rows — scroll internally above a max height */}
             <div style={{ maxHeight: 480, overflowY: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead style={{ position: 'sticky', top: 0, background: 'var(--surface)', zIndex: 1 }}>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
                     {['Timestamp', 'Canale', 'Username', 'Esito', 'Messaggio'].map(h => (
-                      <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)', whiteSpace: 'nowrap' }}>
+                      <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)', whiteSpace: 'nowrap' }}>
                         {h}
                       </th>
                     ))}
@@ -479,15 +691,12 @@ export function Dashboard({ addToast }: Props) {
                       onMouseEnter={(el) => { el.currentTarget.style.background = 'var(--surface2)' }}
                       onMouseLeave={(el) => { el.currentTarget.style.background = 'transparent' }}
                     >
-                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text3)', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text3)', whiteSpace: 'nowrap' }} className="tabular">
                         {fmtTs(e.requested_at)}
                       </td>
                       <td style={{ padding: '12px 16px' }}>
                         <span title={e.channel === 'voice' ? 'Telefono' : 'Email'} style={{ display: 'inline-flex', color: 'var(--text2)' }}>
-                          {e.channel === 'voice'
-                            ? <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
-                            : <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
-                          }
+                          {e.channel === 'voice' ? <IcPhone size={15} /> : <IcEmailIcon size={15} />}
                         </span>
                       </td>
                       <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--accent)' }}>{e.username}</td>
@@ -499,9 +708,8 @@ export function Dashboard({ addToast }: Props) {
               </table>
             </div>
 
-            {/* pagination — always visible below the table */}
             <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 12, color: 'var(--text3)' }}>
+              <span className="tabular" style={{ fontSize: 12, color: 'var(--text3)' }}>
                 {histPage * PAGE_SIZE + 1}–{Math.min((histPage + 1) * PAGE_SIZE, drillFiltered.length)} di {drillFiltered.length}
               </span>
               <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
@@ -520,7 +728,18 @@ export function Dashboard({ addToast }: Props) {
           </>
         )}
       </div>
+
       <ScrollToTop containerRef={scrollRef} />
+
+      <ConfirmDialog
+        open={confirmClear}
+        title="Azzera cronologia"
+        message="Tutti i record di reset password verranno eliminati definitivamente. Questa azione non è reversibile."
+        confirmLabel="Azzera"
+        danger
+        onConfirm={handleClear}
+        onCancel={() => setConfirmClear(false)}
+      />
     </div>
   )
 }

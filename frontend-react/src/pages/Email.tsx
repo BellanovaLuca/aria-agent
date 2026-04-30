@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { apiGet, apiPost } from '../hooks/useApi'
 import { fmtTs, toYMD } from '../utils'
 import { DatePicker } from '../components/DatePicker'
+import { IcSearch, IcPlus, IcClose, IcRefresh } from '../components/icons'
 import type { Email as EmailType, ToastItem } from '../types'
 
 interface Props {
@@ -13,19 +14,6 @@ const ACCOUNT_RE  = /per l['']account\s*:\s*(\S+)/i
 
 function extractAccount(body: string): string {
   return ACCOUNT_RE.exec(body)?.[1] ?? ''
-}
-
-function IcSearch() {
-  return <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" width="13" height="13"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3 3"/></svg>
-}
-function IcPlus() {
-  return <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="13" height="13"><path d="M8 2v12M2 8h12"/></svg>
-}
-function IcClose() {
-  return <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="14" height="14"><path d="M3 3l10 10M13 3L3 13"/></svg>
-}
-function IcRefresh() {
-  return <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd"/></svg>
 }
 
 function GlowDot({ color, size = 8 }: { color: string; size?: number }) {
@@ -168,21 +156,12 @@ export function Email({ addToast }: Props) {
     <div className="fade-in dot-grid" style={{ padding: '28px 32px', height: '100%', overflow: 'hidden', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
 
       {/* ── Page header ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexShrink: 0 }}>
+      <div className="section-in" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexShrink: 0 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 2 }}>Email</h1>
+          <h1 className="heading-display" style={{ fontSize: 28, marginBottom: 2 }}>Email</h1>
           <p style={{ fontSize: 14, color: 'var(--text3)' }}>Monitoraggio flusso di reset password via email</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={handleRefresh} disabled={refreshing} aria-label="Aggiorna"
-            style={{ color: 'var(--text2)', padding: 7, borderRadius: 7, border: '1px solid var(--border)', background: 'var(--surface)', cursor: refreshing ? 'default' : 'pointer', display: 'flex', alignItems: 'center' }}
-            onMouseEnter={(e) => { if (!refreshing) e.currentTarget.style.borderColor = 'var(--border2)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)' }}
-          >
-            <span style={{ display: 'flex' }} className={refreshing ? 'animate-spin' : ''}>
-              <IcRefresh />
-            </span>
-          </button>
           <button
             onClick={() => setShowModal(true)}
             style={{
@@ -191,12 +170,21 @@ export function Email({ addToast }: Props) {
               background: 'var(--accent)', border: 'none',
               color: '#fff', fontSize: 13, fontWeight: 600,
               cursor: 'pointer', boxShadow: '0 4px 14px var(--accent-glow)',
-              transition: 'opacity .15s',
+              transition: 'opacity .15s', touchAction: 'manipulation',
             }}
             onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85' }}
             onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
           >
             <IcPlus /> Simula email
+          </button>
+          <button onClick={handleRefresh} disabled={refreshing} aria-label="Aggiorna"
+            style={{ color: 'var(--text2)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', cursor: refreshing ? 'default' : 'pointer', display: 'flex', alignItems: 'center' }}
+            onMouseEnter={(e) => { if (!refreshing) e.currentTarget.style.borderColor = 'var(--border2)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)' }}
+          >
+            <span style={{ display: 'flex' }} className={refreshing ? 'animate-spin' : ''}>
+              <IcRefresh />
+            </span>
           </button>
         </div>
       </div>
@@ -324,7 +312,7 @@ export function Email({ addToast }: Props) {
                     <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {e.from_address}
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--mono)' }}>
+                    <div className="tabular" style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--mono)' }}>
                       {fmtTs(e.timestamp)}
                     </div>
                   </div>
@@ -447,7 +435,7 @@ export function Email({ addToast }: Props) {
           <div>
             <label htmlFor="sim-from" style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text3)', marginBottom: 6, letterSpacing: 0.5, textTransform: 'uppercase' }}>Mittente</label>
             <input id="sim-from" type="email" placeholder="utente@example.com"
-              autoComplete="off" value={sim.from_address}
+              autoComplete="email" value={sim.from_address}
               onChange={(e) => setSim((p) => ({ ...p, from_address: e.target.value }))}
               style={inputStyle}
               onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--accent)' }}

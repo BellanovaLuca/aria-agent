@@ -25,13 +25,14 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"DM Sans"', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['"DM Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        sans:    ['"Geist"', 'system-ui', '-apple-system', 'sans-serif'],
+        mono:    ['"Geist Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        display: ['"Instrument Serif"', 'Georgia', 'serif'],
       },
       animation: {
         'spin-slow':  'spin 1.5s linear infinite',
         'pulse-dot':  'pulseDot 2.5s ease-in-out infinite',
-        'page-enter': 'pageEnter 0.18s ease-out forwards',
+        'page-enter': 'pageEnter 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'count-up':   'countUp 0.5s ease-out forwards',
         'toast-in':   'toastIn 0.25s ease-out forwards',
         'toast-out':  'toastOut 0.2s ease-in forwards',
@@ -42,7 +43,7 @@ export default {
           '50%':      { opacity: '0.8', boxShadow: '0 0 0 5px rgba(52,211,153,0)' },
         },
         pageEnter: {
-          from: { opacity: '0', transform: 'translateY(8px)' },
+          from: { opacity: '0', transform: 'translateY(12px)' },
           to:   { opacity: '1', transform: 'translateY(0)' },
         },
         countUp: {

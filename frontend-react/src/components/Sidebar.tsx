@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { IcDashboard, IcEmailIcon, IcPhone, IcUsers, IcKey } from './icons'
 import type { Page } from '../types'
 
 interface Props {
@@ -10,23 +11,8 @@ interface Props {
   onTweaks: (rect: DOMRect) => void
 }
 
-/* ── Icons (filled, matching design) ────────────────────────────────────── */
+/* ── Local icons ─────────────────────────────────────────────────────────── */
 
-function IcDashboard() {
-  return <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M2 3a1 1 0 011-1h5a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V3zm9 0a1 1 0 011-1h5a1 1 0 011 1v2a1 1 0 01-1 1h-5a1 1 0 01-1-1V3zm0 6a1 1 0 011-1h5a1 1 0 011 1v8a1 1 0 01-1 1h-5a1 1 0 01-1-1V9zM2 13a1 1 0 011-1h5a1 1 0 011 1v4a1 1 0 01-1 1H3a1 1 0 01-1-1v-4z"/></svg>
-}
-function IcKey() {
-  return <svg viewBox="0 0 20 20" fill="currentColor" width="17" height="17"><path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clipRule="evenodd"/></svg>
-}
-function IcEmail() {
-  return <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
-}
-function IcPhone() {
-  return <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
-}
-function IcUsers() {
-  return <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
-}
 function IcChevronDown({ open }: { open: boolean }) {
   return (
     <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"
@@ -48,6 +34,24 @@ function IcSliders() {
   return <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M2 4h12M2 8h12M2 12h12"/><circle cx="5" cy="4" r="1.5" fill="currentColor" stroke="none"/><circle cx="11" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="7" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
 }
 
+/* ── Aria mark (monochrome asterisk — no gradient) ───────────────────────── */
+function AriaMark({ size = 36 }: { size?: number }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: 10,
+      background: 'var(--surface2)',
+      border: '1px solid var(--border2)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0,
+    }}>
+      <svg viewBox="0 0 20 20" fill="none" stroke="var(--accent)" strokeWidth="1.8"
+        strokeLinecap="round" width="14" height="14">
+        <path d="M10 2v16M2 10h16M4.1 4.1l11.8 11.8M15.9 4.1L4.1 15.9"/>
+      </svg>
+    </div>
+  )
+}
+
 /* ── NavItem ─────────────────────────────────────────────────────────────── */
 
 function NavItem({
@@ -56,27 +60,26 @@ function NavItem({
   page: Page; label: string; icon: React.ReactNode; isActive: boolean
   isCollapsed: boolean; badge?: number; onNavigate: (p: Page) => void
 }) {
-  const baseStyle: React.CSSProperties = {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 9,
-    padding: isCollapsed ? '9px 0' : '9px 10px',
-    justifyContent: isCollapsed ? 'center' : undefined,
-    borderRadius: 8,
-    background: isActive ? 'var(--accent-dim)' : 'transparent',
-    color: isActive ? 'var(--accent)' : 'var(--text2)',
-    fontSize: 15,
-    fontWeight: isActive ? 600 : 400,
-    border: isActive ? '1px solid var(--accent-glow)' : '1px solid transparent',
-    transition: 'background .12s, color .12s, border-color .12s',
-    cursor: 'pointer',
-    marginBottom: 2,
-    position: 'relative',
-  }
   return (
     <button
-      style={baseStyle}
+      style={{
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 9,
+        padding: isCollapsed ? '9px 0' : '9px 10px',
+        justifyContent: isCollapsed ? 'center' : undefined,
+        borderRadius: 8,
+        background: isActive ? 'var(--accent-dim)' : 'transparent',
+        color: isActive ? 'var(--accent)' : 'var(--text2)',
+        fontSize: 15,
+        fontWeight: isActive ? 600 : 400,
+        border: isActive ? '1px solid var(--accent-glow)' : '1px solid transparent',
+        transition: 'background .12s, color .12s, border-color .12s',
+        cursor: 'pointer',
+        marginBottom: 2,
+        position: 'relative',
+      }}
       onClick={() => onNavigate(page)}
       aria-current={isActive ? 'page' : undefined}
       title={isCollapsed ? label : undefined}
@@ -151,8 +154,6 @@ export function Sidebar({ current, onNavigate, isDark, onThemeToggle, userCount,
     window.addEventListener('mouseup', onUp)
   }
 
-  const isResetActive = RESET_PAGES.includes(current)
-
   return (
     <aside
       style={{
@@ -177,41 +178,25 @@ export function Sidebar({ current, onNavigate, isDark, onThemeToggle, userCount,
             onClick={() => setIsCollapsed(false)}
             aria-label="Espandi sidebar"
             title="Espandi sidebar"
-            style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: 'linear-gradient(135deg, var(--accent), #a855f7)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 15, fontWeight: 800, color: 'white',
-              boxShadow: '0 4px 14px var(--accent-glow)',
-              cursor: 'pointer', border: 'none',
-            }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
-            A
+            <AriaMark size={36} />
           </button>
         </div>
       ) : (
         <div style={{ padding: '20px 16px 16px', borderBottom: '1px solid var(--border)', marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: 'linear-gradient(135deg, var(--accent), #a855f7)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 15, fontWeight: 800, color: 'white',
-              boxShadow: '0 4px 14px var(--accent-glow)', flexShrink: 0,
-            }}>
-              A
-            </div>
+            <AriaMark size={36} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.2, color: 'var(--text)' }}>Aria</div>
-              <div style={{ fontSize: 12, color: 'var(--text3)', fontWeight: 500, letterSpacing: 0.3 }}>Assistente AI</div>
+              <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.2, color: 'var(--text)', letterSpacing: -0.2 }}>Aria</div>
+              <div style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 500, letterSpacing: 0.4, textTransform: 'uppercase' }}>Assistente AI</div>
             </div>
             <button
               onClick={() => setIsCollapsed(true)}
               aria-label="Comprimi sidebar"
               title="Comprimi sidebar"
+              className="btn-ghost"
               style={{ color: 'var(--text3)', padding: 6, borderRadius: 7, border: 'none', background: 'transparent', cursor: 'pointer' }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.background = 'var(--surface2)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text3)'; e.currentTarget.style.background = 'transparent' }}
             >
               <IcPanelClose />
             </button>
@@ -228,26 +213,25 @@ export function Sidebar({ current, onNavigate, isDark, onThemeToggle, userCount,
             <button
               onClick={() => setResetOpen(o => !o)}
               aria-expanded={resetOpen}
+              className="btn-ghost"
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '7px 10px', borderRadius: 8,
-                color: 'var(--text2)', fontSize: 14, fontWeight: 600, letterSpacing: 0.3,
-                cursor: 'pointer', border: 'none', background: 'transparent', transition: 'color .15s',
+                color: 'var(--text3)', fontSize: 12, fontWeight: 600, letterSpacing: 0.5,
+                textTransform: 'uppercase',
+                cursor: 'pointer', border: 'none', background: 'transparent',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text2)' }}
             >
               <span>Reset Password</span>
               <IcChevronDown open={resetOpen} />
             </button>
           )}
 
-          {/* Sub-items */}
           {(isCollapsed || resetOpen) && (
             <div>
               {[
-                { page: 'dashboard' as Page, label: 'Dashboard', icon: isCollapsed ? <IcKey /> : <IcDashboard /> },
-                { page: 'email' as Page, label: 'Email', icon: <IcEmail /> },
+                { page: 'dashboard' as Page, label: 'Dashboard', icon: isCollapsed ? <IcKey size={17} /> : <IcDashboard size={15} /> },
+                { page: 'email'     as Page, label: 'Email',     icon: <IcEmailIcon size={15} /> },
               ].map(({ page, label, icon }) => {
                 const active = current === page
                 return isCollapsed ? (
@@ -255,13 +239,14 @@ export function Sidebar({ current, onNavigate, isDark, onThemeToggle, userCount,
                     key={page}
                     onClick={() => onNavigate(page)}
                     title={label}
+                    aria-current={active ? 'page' : undefined}
                     style={{
                       width: '100%', display: 'flex', justifyContent: 'center',
                       padding: '9px 0', borderRadius: 8, marginBottom: 2,
                       background: active ? 'var(--accent-dim)' : 'transparent',
                       color: active ? 'var(--accent)' : 'var(--text2)',
                       border: active ? '1px solid var(--accent-glow)' : '1px solid transparent',
-                      cursor: 'pointer', transition: 'all .12s',
+                      cursor: 'pointer', transition: 'background .12s, color .12s',
                     }}
                     onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = 'var(--surface2)'; e.currentTarget.style.color = 'var(--text)' } }}
                     onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text2)' } }}
@@ -293,34 +278,28 @@ export function Sidebar({ current, onNavigate, isDark, onThemeToggle, userCount,
             </div>
           )}
 
-          {/* + Nuovo modulo */}
           {!isCollapsed && (
             <button
               disabled
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 9,
                 padding: '7px 20px', borderRadius: 8,
-                color: 'var(--text3)', fontSize: 14, fontWeight: 400,
-                cursor: 'pointer', border: '1px solid transparent', background: 'transparent',
-                opacity: 0.6,
+                color: 'var(--text3)', fontSize: 13, fontWeight: 400,
+                cursor: 'default', border: '1px solid transparent', background: 'transparent',
+                opacity: 0.5,
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text2)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text3)' }}
             >
               + Nuovo modulo
             </button>
           )}
         </div>
 
-        {/* Divider */}
         <div style={{ height: 1, background: 'var(--border)', margin: '8px 4px 8px' }} />
 
-        {/* Chiamate */}
-        <NavItem page="calls" label="Chiamate" icon={<IcPhone />}
+        <NavItem page="calls" label="Chiamate" icon={<IcPhone size={15} />}
           isActive={current === 'calls'} isCollapsed={isCollapsed} onNavigate={onNavigate} />
 
-        {/* Utenti */}
-        <NavItem page="admin" label="Utenti" icon={<IcUsers />}
+        <NavItem page="admin" label="Utenti" icon={<IcUsers size={15} />}
           isActive={current === 'admin'} isCollapsed={isCollapsed} badge={userCount} onNavigate={onNavigate} />
       </nav>
 
@@ -328,25 +307,24 @@ export function Sidebar({ current, onNavigate, isDark, onThemeToggle, userCount,
       <div style={{ padding: '14px 16px 0', borderTop: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
-            width: 9, height: 9, borderRadius: '50%',
+            width: 7, height: 7, borderRadius: '50%',
             background: 'var(--success)', boxShadow: '0 0 6px var(--success)',
             flexShrink: 0,
           }} className="animate-pulse-dot" />
           {!isCollapsed && (
-            <span style={{ fontSize: 14, color: 'var(--text3)' }}>Online</span>
+            <span style={{ fontSize: 13, color: 'var(--text3)' }}>Online</span>
           )}
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
             <button
               onClick={(e) => onTweaks(e.currentTarget.getBoundingClientRect())}
-              aria-label="Tweaks"
-              title="Tweaks"
+              aria-label="Personalizzazione"
+              title="Personalizzazione"
+              className="btn-icon"
               style={{
                 color: 'var(--text3)', padding: 6,
                 borderRadius: 7, border: '1px solid var(--border)',
-                background: 'transparent', cursor: 'pointer', transition: 'border-color .12s',
+                background: 'transparent', cursor: 'pointer',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border2)'; e.currentTarget.style.color = 'var(--text2)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text3)' }}
             >
               <IcSliders />
             </button>
@@ -354,19 +332,19 @@ export function Sidebar({ current, onNavigate, isDark, onThemeToggle, userCount,
               onClick={onThemeToggle}
               aria-label={isDark ? 'Passa a tema chiaro' : 'Passa a tema scuro'}
               title={isDark ? 'Tema chiaro' : 'Tema scuro'}
+              className="btn-icon"
               style={{
                 color: 'var(--text3)', padding: 6,
                 borderRadius: 7, border: '1px solid var(--border)',
-                background: 'transparent', cursor: 'pointer', transition: 'border-color .12s',
+                background: 'transparent', cursor: 'pointer',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border2)'; e.currentTarget.style.color = 'var(--text2)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text3)' }}
             >
               {isDark ? <IcSun /> : <IcMoon />}
             </button>
           </div>
         </div>
       </div>
+
       {/* ── Resize handle ── */}
       {!isCollapsed && (
         <div
@@ -374,6 +352,7 @@ export function Sidebar({ current, onNavigate, isDark, onThemeToggle, userCount,
           onMouseEnter={() => setHandleHover(true)}
           onMouseLeave={() => setHandleHover(false)}
           style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 6, cursor: 'col-resize', zIndex: 10 }}
+          aria-hidden="true"
         >
           <div style={{
             position: 'absolute', right: 1, top: 0, bottom: 0, width: 2, borderRadius: 1,

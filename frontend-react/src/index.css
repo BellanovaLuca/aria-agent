@@ -3,9 +3,6 @@
 @tailwind utilities;
 
 /* ── Theme tokens ─────────────────────────────────────────────────────────── */
-/* gh-* are RGB triplets for Tailwind opacity modifiers.                      */
-/* Design aliases (--surface, --accent etc.) are direct CSS vars for          */
-/* inline styles in components.                                               */
 
 :root {
   color-scheme: dark;
@@ -27,9 +24,8 @@
   --gh-amber:   251 191 36;
   --gh-amber2:  253 211 77;
 
-  /* Design component aliases */
   --bg:          #080712;
-  --sidebar:     #100f20;
+  --sidebar:     #0d0c1e;
   --surface:     #161430;
   --surface2:    #1e1c3a;
   --surface3:    #282646;
@@ -49,8 +45,9 @@
   --text:        #f2f0ff;
   --text2:       #b2aede;
   --text3:       #7672a2;
-  --font:        'DM Sans', sans-serif;
-  --mono:        'DM Mono', monospace;
+  --font:        'Geist', system-ui, -apple-system, sans-serif;
+  --display:     'Instrument Serif', Georgia, serif;
+  --mono:        'Geist Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
 html.light {
@@ -102,15 +99,28 @@ html.light {
     height: 100%;
     margin: 0;
     padding: 0;
-    font-size: 17px;
+    font-size: 16px;
   }
 
   body {
     background-color: rgb(var(--gh-canvas));
     color: rgb(var(--gh-text));
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-family: var(--font);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Global focus ring — applies to ALL buttons/links via :focus-visible */
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  [tabindex]:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
   }
 
   /* Themed scrollbars */
@@ -126,8 +136,8 @@ html.light {
 @layer components {
   /* Subtle dot-grid texture on the canvas background */
   .dot-grid {
-    background-image: radial-gradient(circle, rgb(var(--gh-border2) / 0.6) 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-image: radial-gradient(circle at center, rgb(var(--gh-border2) / 0.5) 1px, transparent 1.5px);
+    background-size: 22px 22px;
   }
 
   /* Form input base style */
@@ -138,10 +148,51 @@ html.light {
       transition-colors duration-150;
   }
 
+  /* Display heading — Instrument Serif */
+  .heading-display {
+    font-family: var(--display);
+    font-style: italic;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
   /* Metric card hover glow */
   .metric-glow:hover {
     border-color: rgb(var(--gh-blue) / 0.30);
     box-shadow: 0 0 0 1px rgb(var(--gh-blue) / 0.15), 0 4px 20px rgb(var(--gh-blue) / 0.12);
+  }
+
+  /* Generic ghost button — handles hover via CSS */
+  .btn-ghost {
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--surface2) !important;
+    color: var(--text) !important;
+  }
+  .btn-ghost:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Surface-bordered icon button */
+  .btn-icon {
+    transition: border-color 0.12s, color 0.12s;
+  }
+  .btn-icon:hover:not(:disabled) {
+    border-color: var(--border2) !important;
+    color: var(--text2) !important;
+  }
+
+  /* Tabular numbers for data columns */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* Touch targets */
+  .touch-target {
+    touch-action: manipulation;
   }
 }
 
@@ -155,8 +206,8 @@ dialog {
 }
 
 dialog::backdrop {
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(3px);
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(4px);
 }
 
 @keyframes spin {
@@ -177,24 +228,27 @@ dialog::backdrop {
 }
 
 @keyframes callPanelIn {
-  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
   to   { opacity: 1; transform: translateY(0)   scale(1); }
 }
 
-/* ── Reduced-motion ───────────────────────────────────────────────────────── */
+/* ── Staggered page sections ──────────────────────────────────────────────── */
+
+@keyframes sectionIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.section-in {
+  animation: sectionIn 0.24s ease-out both;
+}
+
+/* ── Reduced-motion — catch-all ───────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-pulse-dot,
-  .animate-page-enter,
-  .animate-count-up,
-  .animate-toast-in,
-  .animate-toast-out,
-  .animate-spin {
-    animation: none !important;
-  }
-  .transition-all,
-  .transition-colors,
-  .transition-opacity {
-    transition: none !important;
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

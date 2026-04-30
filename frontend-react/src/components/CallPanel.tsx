@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
-import { Room, RoomEvent, Track } from 'livekit-client'
+import type { Room } from 'livekit-client'
 
 type CallState = 'idle' | 'ready' | 'connecting' | 'active' | 'error'
 type AgentStatus = 'waiting' | 'online'
 
-const BARS = [0.32, 0.52, 0.72, 0.90, 1.0, 0.95, 0.75, 0.55, 0.35]
+const BARS = [0.28, 0.50, 0.70, 0.90, 1.0, 0.88, 0.72, 0.50, 0.30]
 
-function MicIcon({ size = 20, color = 'white' }: { size?: number; color?: string }) {
+function MicIcon({ size = 20, color = 'currentColor' }: { size?: number; color?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"
       strokeLinecap="round" strokeLinejoin="round" width={size} height={size}>
@@ -21,8 +21,8 @@ function MicIcon({ size = 20, color = 'white' }: { size?: number; color?: string
 function StopIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
-      <circle cx="12" cy="12" r="9" stroke="white" strokeWidth="1.8" fill="none"/>
-      <rect x="8.5" y="8.5" width="7" height="7" rx="1" fill="white"/>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" fill="none"/>
+      <rect x="8.5" y="8.5" width="7" height="7" rx="1" fill="currentColor"/>
     </svg>
   )
 }
@@ -54,13 +54,12 @@ function Waveform({ active }: { active: boolean }) {
 }
 
 export function CallPanel() {
-  const [state, setState]           = useState<CallState>('idle')
+  const [state, setState]             = useState<CallState>('idle')
   const [agentStatus, setAgentStatus] = useState<AgentStatus>('waiting')
-  const [errorMsg, setErrorMsg]     = useState('')
+  const [errorMsg, setErrorMsg]       = useState('')
   const roomRef  = useRef<Room | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  /* ── LiveKit helpers ── */
   const cleanup = () => {
     audioRef.current?.pause()
     audioRef.current = null
@@ -85,7 +84,9 @@ export function CallPanel() {
       return
     }
 
-    const room = new Room()
+    /* Lazy-load livekit — not bundled until first call */
+    const { Room: RoomClass, RoomEvent, Track } = await import('livekit-client')
+    const room = new RoomClass()
     roomRef.current = room
 
     room.on(RoomEvent.TrackSubscribed, (track) => {
@@ -129,76 +130,88 @@ export function CallPanel() {
 
   useEffect(() => () => { roomRef.current?.disconnect() }, [])
 
-  /* ── Derived ── */
   const panelOpen = state !== 'idle'
   const isActive  = state === 'active'
 
   const statusText =
-    state === 'connecting' ? 'Connessione in corso…' :
-    state === 'error'      ? 'Connessione fallita'   :
-    isActive && agentStatus === 'online' ? 'In ascolto…' :
-    isActive ? 'In attesa di Sofia…' :
+    state === 'connecting'                      ? 'Connessione in corso…' :
+    state === 'error'                           ? 'Connessione fallita'        :
+    isActive && agentStatus === 'online'        ? 'In ascolto…'           :
+    isActive                                    ? 'In attesa di Sofia…'   :
     'Assistente AI vocale'
 
   const statusColor =
-    state === 'error' ? '#ef4444' :
-    isActive && agentStatus === 'online' ? '#22c55e' :
-    isActive ? '#fbbf24' :
-    '#9ca3af'
+    state === 'error'                    ? 'var(--danger)' :
+    isActive && agentStatus === 'online' ? 'var(--success)' :
+    isActive                             ? 'var(--warn)'   :
+    'var(--text3)'
 
   const quoteText =
     isActive && agentStatus === 'online'
-      ? '"Ciao, sono Sofia. Come posso aiutarti?"'
+      ? '“Ciao, sono Sofia. Come posso aiutarti?”'
       : isActive
         ? 'In attesa che Sofia entri in linea…'
         : state === 'error'
-          ? errorMsg || 'Si è verificato un errore.'
+          ? errorMsg || 'Siè verificato un errore.'
           : 'Avvia la chiamata per parlare con Sofia'
 
   return (
     <>
-      {/* ── Panel ── */}
+      {/* Panel — dark-themed, cohesive with app surface */}
       {panelOpen && (
-        <div style={{
-          position: 'fixed', bottom: 88, right: 24, zIndex: 50,
-          width: 316,
-          background: '#ffffff',
-          borderRadius: 20,
-          boxShadow: '0 24px 64px rgba(0,0,0,.38), 0 4px 16px rgba(0,0,0,.18)',
-          overflow: 'hidden',
-          animation: 'callPanelIn .22s cubic-bezier(.16,1,.3,1)',
-          fontFamily: "'DM Sans', system-ui, sans-serif",
-        }}>
-
-          {/* Avatar + status */}
-          <div style={{ padding: '26px 24px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div
+          role="dialog"
+          aria-label="Chiamata con Sofia"
+          style={{
+            position: 'fixed', bottom: 88, right: 24, zIndex: 50,
+            width: 316,
+            background: 'var(--surface)',
+            border: '1px solid var(--border2)',
+            borderRadius: 20,
+            boxShadow: '0 24px 64px rgba(0,0,0,.55), 0 0 0 1px var(--accent-glow)',
+            overflow: 'hidden',
+            animation: 'callPanelIn .22s cubic-bezier(.16,1,.3,1)',
+            fontFamily: 'var(--font)',
+          }}
+        >
+          {/* Header strip */}
+          <div style={{
+            background: 'var(--surface2)',
+            borderBottom: '1px solid var(--border)',
+            padding: '10px 16px',
+            display: 'flex', alignItems: 'center', gap: 10,
+          }}>
             <div style={{
-              width: 60, height: 60, borderRadius: '50%',
-              background: 'var(--accent)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 14,
-              boxShadow: isActive && agentStatus === 'online'
-                ? '0 0 0 5px rgba(164,144,255,.18), 0 0 24px rgba(164,144,255,.35)'
-                : 'none',
-              transition: 'box-shadow .5s ease',
-            }}>
-              <MicIcon size={22} />
-            </div>
-
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 5 }}>
-              Sofia
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: statusColor, fontWeight: 500 }}>
-              {isActive && (
-                <div style={{
-                  width: 7, height: 7, borderRadius: '50%',
-                  background: statusColor,
-                  boxShadow: `0 0 6px ${statusColor}`,
-                  animation: agentStatus === 'online' ? 'fabPulse 2s ease-in-out infinite' : 'none',
-                }} />
-              )}
+              width: 8, height: 8, borderRadius: '50%',
+              background: statusColor,
+              boxShadow: `0 0 8px ${statusColor}`,
+              flexShrink: 0,
+              animation: isActive && agentStatus === 'online' ? 'fabPulse 2s ease-in-out infinite' : 'none',
+            }} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text2)', flex: 1 }}>
               {statusText}
+            </span>
+          </div>
+
+          {/* Avatar + name */}
+          <div style={{ padding: '22px 24px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%',
+              background: 'var(--accent-dim)',
+              border: `1px solid ${isActive && agentStatus === 'online' ? 'var(--accent)' : 'var(--border2)'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 12,
+              color: 'var(--accent)',
+              boxShadow: isActive && agentStatus === 'online'
+                ? '0 0 0 6px var(--accent-dim), 0 0 24px var(--accent-glow)'
+                : 'none',
+              transition: 'box-shadow .5s ease, border-color .3s',
+            }}>
+              <MicIcon size={20} />
+            </div>
+
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>
+              Sofia
             </div>
           </div>
 
@@ -207,26 +220,27 @@ export function CallPanel() {
             <Waveform active={isActive && agentStatus === 'online'} />
           </div>
 
-          {/* Quote / info */}
+          {/* Quote */}
           <div style={{
-            padding: '6px 28px 20px',
-            fontSize: 13.5, color: state === 'error' ? '#ef4444' : '#6b7280',
+            padding: '4px 28px 18px',
+            fontSize: 13, color: state === 'error' ? 'var(--danger)' : 'var(--text3)',
             textAlign: 'center', lineHeight: 1.55,
             fontStyle: isActive && agentStatus === 'online' ? 'italic' : 'normal',
-            minHeight: 56,
+            minHeight: 52,
           }}>
             {quoteText}
           </div>
 
-          {/* Action button */}
-          <div style={{ padding: '0 20px 22px' }}>
+          {/* Action */}
+          <div style={{ padding: '0 20px 20px' }}>
             {(state === 'ready' || state === 'error') ? (
               <button
                 onClick={startCall}
+                className="touch-target"
                 style={{
-                  width: '100%', padding: '12px 0', borderRadius: 12,
-                  background: 'var(--accent)', border: 'none',
-                  color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                  width: '100%', padding: '11px 0', borderRadius: 12,
+                  background: 'var(--accent)', border: '1px solid var(--accent-glow)',
+                  color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
                   boxShadow: '0 4px 16px var(--accent-glow)', letterSpacing: 0.2,
                   transition: 'opacity .15s',
                 }}
@@ -236,21 +250,23 @@ export function CallPanel() {
                 {state === 'error' ? 'Riprova' : 'Avvia chiamata'}
               </button>
             ) : state === 'connecting' ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '12px 0', color: '#9ca3af', fontSize: 13 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '11px 0', color: 'var(--text3)', fontSize: 13 }}>
                 <div className="w-4 h-4 border-2 border-gh-blue border-t-transparent rounded-full animate-spin" />
                 Connessione in corso…
               </div>
             ) : (
               <button
                 onClick={endCall}
+                className="touch-target"
                 style={{
-                  width: '100%', padding: '12px 0', borderRadius: 12,
-                  background: 'transparent', border: '1.5px solid #fca5a5',
-                  color: '#ef4444', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                  transition: 'background .15s, color .15s, border-color .15s',
+                  width: '100%', padding: '11px 0', borderRadius: 12,
+                  background: 'var(--danger-dim)',
+                  border: '1px solid #f8717140',
+                  color: 'var(--danger)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                  transition: 'background .15s, border-color .15s',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.borderColor = '#ef4444' }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#fca5a5' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#f8717130'; e.currentTarget.style.borderColor = 'var(--danger)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--danger-dim)'; e.currentTarget.style.borderColor = '#f8717140' }}
               >
                 Termina chiamata
               </button>
@@ -259,7 +275,7 @@ export function CallPanel() {
         </div>
       )}
 
-      {/* ── FAB ── */}
+      {/* FAB */}
       <button
         onClick={
           state === 'idle'       ? () => setState('ready') :
@@ -269,14 +285,18 @@ export function CallPanel() {
         }
         aria-label={isActive ? 'Termina chiamata' : 'Avvia chiamata con Sofia'}
         title={isActive ? 'Termina chiamata' : 'Chiama Sofia'}
+        className="touch-target"
         style={{
           position: 'fixed', bottom: 24, right: 24, zIndex: 51,
           width: 52, height: 52, borderRadius: '50%', border: 'none',
-          background: isActive ? '#ef4444' : 'linear-gradient(135deg, var(--accent), #c084fc)',
+          background: isActive ? 'var(--danger)' : 'var(--accent)',
+          color: 'white',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer',
           animation: isActive ? 'fabPulse 1.8s ease-in-out infinite' : 'none',
-          boxShadow: isActive ? '0 0 0 3px rgba(239,68,68,.25), 0 4px 16px rgba(239,68,68,.5)' : '0 4px 20px var(--accent-glow)',
+          boxShadow: isActive
+            ? '0 0 0 3px rgba(239,68,68,.25), 0 4px 16px rgba(239,68,68,.5)'
+            : '0 4px 20px var(--accent-glow)',
           transition: 'background .3s, box-shadow .3s, transform .15s',
         }}
         onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)' }}

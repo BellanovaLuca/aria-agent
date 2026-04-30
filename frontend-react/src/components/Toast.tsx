@@ -16,8 +16,9 @@ function ToastBubble({ toast, onRemove }: { toast: ToastItem; onRemove: (id: str
 
   return (
     <div
-      role="alert"
-      aria-live="polite"
+      role={toast.type === 'error' ? 'alert' : 'status'}
+      aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+      aria-atomic="true"
       className={`animate-toast-in flex items-center gap-3 px-4 py-3 rounded-lg border shadow-2xl text-sm font-medium max-w-sm ${STYLE[toast.type]}`}
     >
       <span className="font-mono text-base flex-shrink-0" aria-hidden="true">{ICON[toast.type]}</span>
@@ -25,7 +26,7 @@ function ToastBubble({ toast, onRemove }: { toast: ToastItem; onRemove: (id: str
       <button
         onClick={() => onRemove(toast.id)}
         aria-label="Chiudi notifica"
-        className="ml-1 opacity-50 hover:opacity-100 text-lg leading-none transition-opacity"
+        className="ml-1 opacity-50 hover:opacity-100 text-lg leading-none transition-opacity touch-target"
       >
         ×
       </button>
@@ -42,7 +43,7 @@ export function ToastContainer({
 }) {
   if (!toasts.length) return null
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2" aria-label="Notifiche">
       {toasts.map((t) => (
         <ToastBubble key={t.id} toast={t} onRemove={onRemove} />
       ))}
