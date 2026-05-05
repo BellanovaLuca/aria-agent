@@ -254,7 +254,7 @@ export function Admin({ addToast, onUserCountChange }: Props) {
           </button>
           <button onClick={handleRefresh} disabled={refreshing} aria-label="Aggiorna"
             className="btn-icon"
-            style={{ color: 'var(--text2)', padding: 7, borderRadius: 7, border: '1px solid var(--border)', background: 'var(--surface2)', cursor: refreshing ? 'default' : 'pointer', display: 'flex', alignItems: 'center' }}
+            style={{ color: 'var(--text2)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', cursor: refreshing ? 'default' : 'pointer', display: 'flex', alignItems: 'center' }}
           >
             <span style={{ display: 'flex' }} className={refreshing ? 'animate-spin' : ''}>
               <IcRefresh />
@@ -281,7 +281,7 @@ export function Admin({ addToast, onUserCountChange }: Props) {
               style={{
                 width: '100%', padding: '6px 10px 6px 30px',
                 background: 'var(--surface2)', border: '1px solid var(--border)',
-                borderRadius: 7, color: 'var(--text)', fontSize: 13, outline: 'none',
+                borderRadius: 8, color: 'var(--text)', fontSize: 13,
                 fontFamily: 'var(--font)', boxSizing: 'border-box', transition: 'border-color .15s',
               }}
               onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--accent)' }}
@@ -300,7 +300,7 @@ export function Admin({ addToast, onUserCountChange }: Props) {
             <div style={{ color: 'var(--danger)', fontSize: 14, marginBottom: 8 }}>Impossibile caricare gli utenti</div>
             <div style={{ color: 'var(--text3)', fontSize: 12, fontFamily: 'var(--mono)', marginBottom: 16 }}>{loadError}</div>
             <button onClick={() => loadUsers()}
-              style={{ padding: '6px 14px', borderRadius: 7, background: 'var(--accent)', color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--accent)', color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
               ↺ Riprova
             </button>
           </div>
@@ -355,7 +355,7 @@ export function Admin({ addToast, onUserCountChange }: Props) {
                       onClick={() => toggleStatus(u)}
                       title={u.status === 'active' ? 'Clicca per bloccare' : 'Clicca per attivare'}
                       style={{
-                        width: 88, padding: '7px 0', borderRadius: 7,
+                        width: 88, padding: '7px 0', borderRadius: 8,
                         fontSize: 12, fontWeight: 600, textAlign: 'center',
                         cursor: 'pointer', transition: 'background .15s, color .15s',
                         background: 'var(--accent-dim)',
@@ -372,7 +372,7 @@ export function Admin({ addToast, onUserCountChange }: Props) {
                     onClick={() => setDeleteTarget(u.username)}
                     aria-label={`Elimina ${u.username}`}
                     style={{
-                      padding: 7, borderRadius: 7,
+                      padding: 8, borderRadius: 8,
                       background: 'var(--danger-dim)', border: '1px solid #f8717140',
                       color: 'var(--danger)', cursor: 'pointer', display: 'flex',
                       alignItems: 'center', justifyContent: 'center', transition: 'background .15s',

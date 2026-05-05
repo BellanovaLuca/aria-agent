@@ -198,9 +198,9 @@ export function Calls({ addToast }: Props) {
               style={{
                 width: '100%', boxSizing: 'border-box',
                 padding: '6px 26px 6px 28px',
-                borderRadius: 7, border: '1px solid var(--border)',
+                borderRadius: 8, border: '1px solid var(--border)',
                 background: 'var(--surface2)', color: 'var(--text)',
-                fontSize: 12, outline: 'none', fontFamily: 'var(--font)',
+                fontSize: 12, fontFamily: 'var(--font)',
                 transition: 'border-color .15s',
               }}
               onFocus={e => { e.currentTarget.style.borderColor = 'var(--border2)' }}

@@ -1,6 +1,6 @@
-const FMT_YMD = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Rome' })
+const FMT_YMD = new Intl.DateTimeFormat('sv-SE')
 
-/** Returns YYYY-MM-DD in Europe/Rome timezone — used for date filtering. */
+/** Returns YYYY-MM-DD in the local timezone — used for date filtering. */
 export function toYMD(iso: string): string {
   try { return FMT_YMD.format(new Date(iso)) } catch { return '' }
 }
@@ -9,12 +9,11 @@ export function toYMD(iso: string): string {
 const FMT_DATETIME = new Intl.DateTimeFormat('it-IT', {
   day: '2-digit', month: '2-digit', year: 'numeric',
   hour: '2-digit', minute: '2-digit', second: '2-digit',
-  timeZone: 'Europe/Rome', hour12: false,
+  hour12: false,
 })
 
 const FMT_DATE = new Intl.DateTimeFormat('it-IT', {
   day: '2-digit', month: '2-digit', year: 'numeric',
-  timeZone: 'Europe/Rome',
 })
 
 export function fmtTs(iso: string, dateOnly = false): string {
