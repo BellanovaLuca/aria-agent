@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { apiGet } from '../hooks/useApi'
-import { toYMD } from '../utils'
+import { toYMD, fmtTs } from '../utils'
 import { DatePicker } from '../components/DatePicker'
 import { ScrollToTop } from '../components/ScrollToTop'
 import { IcRefresh, IcPhone, IcWeb, IcChevron } from '../components/icons'
@@ -49,9 +49,16 @@ function highlight(text: string, query: string): React.ReactNode {
   return <>{parts}</>
 }
 
-function parseLabel(label: string): { date: string; caller: string } {
+function parseLabel(label: string): { caller: string } {
   const parts = label.split('—').map(p => p.trim())
-  return { date: parts[1] ?? '', caller: parts[2] ?? '' }
+  return { caller: parts[2] ?? '' }
+}
+
+// Filename format: YYYYMMDD_HHMMSS_... — timestamp is UTC
+function parseFnTs(filename: string): string {
+  const m = filename.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/)
+  if (!m) return ''
+  return fmtTs(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`)
 }
 
 interface ChatLine { speaker: 'agent' | 'user'; text: string }
@@ -265,7 +272,7 @@ export function Calls({ addToast }: Props) {
               const content = cache[t.filename]
               const isFetching = fetching.has(t.filename)
               const lines = open && content ? parseChat(content) : []
-              const { date, caller } = parseLabel(t.label)
+              const { caller } = parseLabel(t.label)
               const callerLabel = caller || (phone ? 'Chiamata anonima' : 'Sessione web')
               const globalIdx = transcriptIndexMap.get(t.filename) ?? 0
               const num = transcripts.length - globalIdx
@@ -297,7 +304,7 @@ export function Calls({ addToast }: Props) {
                           Trascrizione #{num}
                         </div>
                         <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 1 }}>{callerLabel}</div>
-                        <div className="tabular" style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--mono)' }}>{date}</div>
+                        <div className="tabular" style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--mono)' }}>{parseFnTs(t.filename)}</div>
                       </div>
                     </div>
                     <div style={{ paddingTop: 3, color: 'var(--accent)' }}>
