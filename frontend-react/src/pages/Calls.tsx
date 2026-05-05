@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { apiGet } from '../hooks/useApi'
-import { toYMD, fmtTs } from '../utils'
+import { toYMD } from '../utils'
 import { DatePicker } from '../components/DatePicker'
 import { ScrollToTop } from '../components/ScrollToTop'
 import { IcRefresh, IcPhone, IcWeb, IcChevron } from '../components/icons'
@@ -54,11 +54,11 @@ function parseLabel(label: string): { caller: string } {
   return { caller: parts[2] ?? '' }
 }
 
-// Filename format: YYYYMMDD_HHMMSS_... — timestamp is UTC
+// Filename format: YYYYMMDD_HHMMSS_... — server-local time, no conversion
 function parseFnTs(filename: string): string {
-  const m = filename.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/)
+  const m = filename.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})/)
   if (!m) return ''
-  return fmtTs(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`)
+  return `${m[3]}/${m[2]}/${m[1]} ${m[4]}:${m[5]}`
 }
 
 interface ChatLine { speaker: 'agent' | 'user'; text: string }
