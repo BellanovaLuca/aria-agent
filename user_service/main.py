@@ -16,7 +16,6 @@ Endpoints:
   GET    /reset-history/{username}  — cronologia reset per singolo utente
   DELETE /reset-history             — azzera la cronologia (usato dal frontend)
   GET    /token                     — genera JWT LiveKit per chiamata WebRTC via browser
-  GET    /call                      — serve la pagina web di chiamata WebRTC
   GET    /transcripts               — lista file di trascrizione (per il frontend React)
   GET    /transcripts/{filename}    — contenuto testo di una singola trascrizione
 """
@@ -35,7 +34,7 @@ from typing import List, Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from livekit.api import AccessToken, VideoGrants
 
@@ -50,7 +49,6 @@ from shared.models import ResetHistoryEntry, ResetRequest, ResetResult, User
 _LIVEKIT_URL = os.getenv("LIVEKIT_URL", "")
 _LIVEKIT_API_KEY = os.getenv("LIVEKIT_API_KEY", "")
 _LIVEKIT_API_SECRET = os.getenv("LIVEKIT_API_SECRET", "")
-_CALL_HTML = Path(__file__).parent / "call.html"
 
 # ── Persistenza ───────────────────────────────────────────────────────────────
 
@@ -317,18 +315,6 @@ def get_webrtc_token():
         .to_jwt()
     )
     return {"token": token, "url": _LIVEKIT_URL, "room": room_name}
-
-
-@app.get("/call", response_class=HTMLResponse)
-def get_call_page():
-    """Serve la pagina HTML per effettuare una chiamata WebRTC con Sofia.
-
-    Il browser carica il LiveKit JS SDK, ottiene un token da /token e si
-    connette direttamente a LiveKit Cloud senza passare per la rete telefonica.
-    """
-    if not _CALL_HTML.exists():
-        raise HTTPException(status_code=404, detail="call.html non trovato")
-    return HTMLResponse(content=_CALL_HTML.read_text(encoding="utf-8"))
 
 
 # ── Endpoints trascrizioni (per il frontend React) ────────────────────────────

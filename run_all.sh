@@ -6,7 +6,7 @@
 #   2. Email Service  (porta 8002) — dipendenza di email processor e frontend
 #   3. Email Processor             — polling email, richiede 1 e 2 attivi
 #   4. Voice Agent                 — si connette a LiveKit Cloud, richiede 1 attivo
-#   5. Frontend Streamlit (porta 8501) — legge da 1 e 2, avviato per ultimo
+#   5. Frontend React (porta 5173)     — legge da 1 e 2, avviato per ultimo
 #
 # Tutti i processi vengono terminati con Ctrl+C (trap su EXIT/INT/TERM).
 #
@@ -23,7 +23,6 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 CONDA_ENV="/home/lbellanova/miniconda3/envs/password-reset-agent/bin"
 PYTHON="$CONDA_ENV/python"
 UVICORN="$CONDA_ENV/uvicorn"
-STREAMLIT="$CONDA_ENV/streamlit"
 
 if [ ! -f "$ROOT/.env" ]; then
   echo "Errore: file .env non trovato. Copia .env.example in .env e compila le chiavi."
@@ -31,7 +30,7 @@ if [ ! -f "$ROOT/.env" ]; then
 fi
 
 # set -a esporta automaticamente ogni variabile assegnata, così i processi figli
-# (uvicorn, python, streamlit) le ereditano senza bisogno di load_dotenv
+# (uvicorn, python, vite) le ereditano senza bisogno di load_dotenv
 set -a
 source "$ROOT/.env"
 set +a
@@ -70,18 +69,18 @@ echo "=== Avvio Voice Agent ==="
 cd "$ROOT" && "$PYTHON" voice_agent/agent.py dev &
 
 # ── 5. Frontend React (Vite) ──────────────────────────────────────────────────
-echo "=== Avvio Frontend React (porta 5173) ==="
+echo "=== Avvio Frontend React (porta 5175) ==="
 if [ ! -d "$ROOT/frontend-react/node_modules" ]; then
   echo "  Installazione dipendenze npm (prima esecuzione)..."
   cd "$ROOT/frontend-react" && npm install --silent
 fi
-cd "$ROOT/frontend-react" && npx vite --port 5173 &
+cd "$ROOT/frontend-react" && npx vite --port 5175 &
 
 echo ""
 echo "Tutti i servizi avviati:"
 echo "  User Service    → http://localhost:8001/docs"
 echo "  Email Service   → http://localhost:8002/docs"
-echo "  Frontend React  → http://localhost:5173"
+echo "  Frontend React  → http://localhost:5175"
 echo ""
 echo "Premi Ctrl+C per fermare tutto."
 

@@ -4,6 +4,11 @@ Piattaforma open-source per costruire **agenti AI multicanale** con voce, email 
 
 Stack: [LiveKit Agents](https://github.com/livekit/agents) + **Google Gemini Live** (LLM + STT + TTS nativo audio) + **React** dashboard di monitoraggio.
 
+> **Nota** — la cartella [`docs/`](docs/README.md) non descrive questa PoC:
+> contiene l'architettura e la documentazione tecnica di una **possibile
+> soluzione di produzione su ambiente AWS** (Amazon Nova Sonic, sblocco
+> utenze) con possibili integrazioni verso ServiceNow e Active Directory.
+
 ---
 
 ## Indice
@@ -178,7 +183,7 @@ Agente LiveKit che gestisce le chiamate vocali in ingresso (telefono e browser W
 
 **Personalizzazione** — le costanti `AGENT_NAME` e `INSTRUCTIONS` in `voice_agent/agent.py` definiscono nome, personalità e comportamento dell'agente. I tool function in `voice_agent/tools.py` espongono le capacità al LLM.
 
-**Chiamata WebRTC:** `http://localhost:8001/call` — parla con l'agente direttamente dal browser, senza telefono né Zoiper. Latenza ~1-1.5s contro i 2-3s della telefonia SIP.
+**Chiamata WebRTC:** integrata nel frontend React (pannello "Call") — parla con l'agente direttamente dal browser, senza telefono né Zoiper. Latenza ~1-1.5s contro i 2-3s della telefonia SIP.
 
 ### 2. Email Processor (`email_processor/`)
 
@@ -206,7 +211,6 @@ Microservizio FastAPI che gestisce gli utenti e la cronologia operazioni. Persis
 | `GET /transcripts` | Lista trascrizioni chiamate |
 | `GET /transcripts/{filename}` | Contenuto trascrizione |
 | `GET /token` | Genera JWT LiveKit per chiamata WebRTC |
-| `GET /call` | Pagina HTML per chiamata WebRTC |
 
 **Documentazione interattiva:** http://localhost:8001/docs
 
@@ -464,7 +468,6 @@ aria-agent/
 │
 ├── user_service/
 │   ├── main.py                # FastAPI: CRUD utenti + operazioni + history + token WebRTC
-│   ├── call.html              # Pagina browser per chiamata WebRTC
 │   └── requirements.txt
 │
 ├── email_service/

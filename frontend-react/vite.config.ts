@@ -20,10 +20,6 @@ export default defineConfig({
         target: 'http://localhost:8001',
         changeOrigin: true,
       },
-      '/call': {
-        target: 'http://localhost:8001',
-        changeOrigin: true,
-      },
       '/token': {
         target: 'http://localhost:8001',
         changeOrigin: true,
