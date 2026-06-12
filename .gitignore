@@ -1,6 +1,7 @@
 # Claude Code internals
 .agents/
 .claude/
+.superpowers/
 
 # Python
 __pycache__/
